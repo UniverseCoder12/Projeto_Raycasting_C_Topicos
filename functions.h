@@ -1,5 +1,6 @@
 #include "raylib.h"
 #include <math.h>
+#include <stdio.h>
 
 #define MAP_W 20
 #define MAP_H 20
@@ -9,7 +10,8 @@
 #define FoV (PI/3)
 #define NUM_RAYS 640
 
-int mapa[MAP_H][MAP_W] = {
+
+/* int mapa[MAP_H][MAP_W] = {
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
     {1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1},
     {1,0,0,1,1,0,0,0,0,1,0,0,0,1,1,0,0,0,0,1},
@@ -30,9 +32,25 @@ int mapa[MAP_H][MAP_W] = {
     {1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1},
     {1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1},
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
-};
+}; */
+void LoadMap(int mapa[MAP_H][MAP_W])
+{
+    FILE *f = fopen("map.txt", "r");
 
-void CastRay(Vector2 playerPos, float angle)
+    if (!f) return;
+
+    for (int y = 0; y < MAP_H; y++)
+    {
+        for (int x = 0; x < MAP_W; x++)
+        {
+            fscanf(f, "%d", &mapa[y][x]);
+        }
+    }
+
+    fclose(f);
+}
+
+void CastRay(Vector2 playerPos, float angle, int mapa[MAP_H][MAP_W])
 {
     float maxDist = 800;
     Color rayColor = (Color){0, 0, 255, 255};
@@ -93,13 +111,13 @@ void CastRay(Vector2 playerPos, float angle)
             windowH/2 - wallHeight/2,
             columnWidth,
             wallHeight,
-            (Color){255- (correctedDist * 255 / maxDist), 0, 0, 255}
+            (Color){255, 0+ (correctedDist * 255 / maxDist), 0+ (correctedDist * 255 / maxDist), 255}
         );
 //        DrawLineV(playerPos, (Vector2){rayX, rayY}, YELLOW);
     }
 }
 
-bool CheckCollisionCircleMap(Vector2 pos, float radius)
+bool CheckCollisionCircleMap(Vector2 pos, float radius, int mapa[MAP_H][MAP_W])
 {
     int left   = (pos.x - radius) / TILE;
     int right  = (pos.x + radius) / TILE;
@@ -132,7 +150,10 @@ bool CheckCollisionCircleMap(Vector2 pos, float radius)
 
 void PlayerMovement(Vector2 *playerPos, float *angle, float radius)
 {
-    float speed = IsKeyDown(KEY_LEFT_SHIFT) ? 1.0f : 0.5f;
+    int mapa[MAP_H][MAP_W];
+
+    LoadMap(mapa);
+    float speed = IsKeyDown(KEY_LEFT_SHIFT) ? 2.0f : 1.0f;
 
     Vector2 newPos = *playerPos;
 
@@ -149,7 +170,7 @@ void PlayerMovement(Vector2 *playerPos, float *angle, float radius)
     }
 
     // colisão
-    if (!CheckCollisionCircleMap(newPos, radius))
+    if (!CheckCollisionCircleMap(newPos, radius, mapa))
     {
         *playerPos = newPos;
     }

@@ -8,8 +8,11 @@ int main()
     Vector2 player = {100, 100};
     float angle = 0;
     int playerray = 8;
+    int mapa[MAP_H][MAP_W];
 
     SetTargetFPS(100);
+
+    LoadMap(mapa);
 
     while (!WindowShouldClose())
     {
@@ -17,25 +20,25 @@ int main()
         if (IsKeyDown(KEY_D)) angle += 0.05f;
 
         BeginDrawing();
-        ClearBackground(BLACK);
+        ClearBackground(WHITE);
         DrawRectangleGradientV(
-    0,
-    0,
-    windowW,
-    windowH/2,
-    SKYBLUE,
-    BLACK
-    );
-    DrawRectangleGradientV(
+        0,
+        0,
+        windowW,
+        windowH/2,
+        SKYBLUE,
+        WHITE
+        );
+        DrawRectangleGradientV(
         0,
         windowH/2,
         windowW,
         windowH/2,
-        BLACK,
+        WHITE,
         GRAY
-    );
+        );
         PlayerMovement(&player, &angle, playerray);
-        CastRay(player, angle);
+        CastRay(player, angle, mapa);
 
         EndDrawing();
     }
