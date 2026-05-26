@@ -1,0 +1,42 @@
+{
+    "version": 3,
+    "vendor": {
+        "conan": {}
+    },
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 15,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "conan-release",
+            "displayName": "'conan-release' config",
+            "description": "'conan-release' configure using 'MinGW Makefiles' generator",
+            "generator": "MinGW Makefiles",
+            "cacheVariables": {
+                "CMAKE_SH": "CMAKE_SH-NOTFOUND",
+                "CMAKE_POLICY_DEFAULT_CMP0091": "NEW",
+                "CMAKE_BUILD_TYPE": "Release"
+            },
+            "toolchainFile": "conan_toolchain.cmake",
+            "binaryDir": "C:\\Users\\User\\Documents\\Git_reposit\u00f3rios\\IF-2026\\Projetos\\Jogo_raycasting_C\\Projeto_Raycasting_C_Topicos\\build"
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "conan-release",
+            "configurePreset": "conan-release",
+            "jobs": 12
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "conan-release",
+            "configurePreset": "conan-release",
+            "execution": {
+                "jobs": 12
+            }
+        }
+    ]
+}

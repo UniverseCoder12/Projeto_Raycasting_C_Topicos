@@ -1,0 +1,3 @@
+C:/Users/User/Documents/Git_repositorios/IF-2026/Projetos/Jogo_raycasting_C/Projeto_Raycasting_C_Topicos/build/CMakeFiles/main.dir
+C:/Users/User/Documents/Git_repositorios/IF-2026/Projetos/Jogo_raycasting_C/Projeto_Raycasting_C_Topicos/build/CMakeFiles/edit_cache.dir
+C:/Users/User/Documents/Git_repositorios/IF-2026/Projetos/Jogo_raycasting_C/Projeto_Raycasting_C_Topicos/build/CMakeFiles/rebuild_cache.dir

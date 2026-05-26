@@ -1,0 +1,1 @@
+  -LC:/Users/User/.conan2/p/b/rayli1c33dc5da8b9b/p/lib  -LC:/Users/User/.conan2/p/b/glfw3fec481d91d5e/p/lib  C:/Users/User/.conan2/p/b/rayli1c33dc5da8b9b/p/lib/libraylib.a -lwinmm C:/Users/User/.conan2/p/b/glfw3fec481d91d5e/p/lib/libglfw3.a -lgdi32 -lopengl32 -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 
