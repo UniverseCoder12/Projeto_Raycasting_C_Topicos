@@ -3,60 +3,130 @@
 
 int main()
 {
-    // Inicializa a janela do jogo
-    InitWindow(640, 640, "Raycasting");
+    InitWindow(windowW, windowH, "Raycaster");
+    SetTargetFPS(60);
 
-    // Variáveis para a posição do jogador, ângulo de visão, raio de colisão e o mapa
     Vector2 player = {100, 100};
     float angle = 0;
     int playerray = 8;
+
     int mapa[MAP_H][MAP_W];
 
-    // define o FPS do jogo para 60
-    SetTargetFPS(60);
+    //=========================
+    // CARREGA TEXTURAS
+    //=========================
 
-    // Carrega a textura da parede
-    Texture2D wallTex = LoadTexture("walltexture.jpg");
-    SetTextureFilter(wallTex, TEXTURE_FILTER_POINT);
+    Texture2D wallTex =
+        LoadTexture("wall.png");
 
-    // Carrega o mapa do arquivo "map.txt" para a matriz mapa
+    Image floorImg =
+        LoadImage("floortexture.png");
+
+    Image ceilImg =
+        LoadImage("ceiltexture.png");
+
+    Texture2D floorTex =
+        LoadTextureFromImage(floorImg);
+
+    Texture2D ceilTex =
+        LoadTextureFromImage(ceilImg);
+
+    Color *floorPixels =
+        (Color *)floorImg.data;
+
+    Color *ceilPixels =
+        (Color *)ceilImg.data;
+
+    SetTextureFilter(
+        wallTex,
+        TEXTURE_FILTER_BILINEAR
+    );
+
+    //=========================
+    // BUFFER DA TELA
+    //=========================
+
+    Image screenBuffer =
+        GenImageColor(
+            windowW,
+            windowH,
+            BLACK
+        );
+
+    Texture2D screenTex =
+        LoadTextureFromImage(
+            screenBuffer
+        );
+
+    //=========================
+    // MAPA
+    //=========================
+
     LoadMap(mapa);
 
-    // Loop principal do jogo, que continua até a janela ser fechada
+    //=========================
+    // LOOP PRINCIPAL
+    //=========================
+
     while (!WindowShouldClose())
     {
-        // Atualiza o ângulo de visão do jogador com base nas teclas A e D
-        if (IsKeyDown(KEY_A)) angle -= 0.05f;
-        if (IsKeyDown(KEY_D)) angle += 0.05f;
+        if (IsKeyDown(KEY_A))
+            angle -= 0.05f;
+
+        if (IsKeyDown(KEY_D))
+            angle += 0.05f;
+
+        PlayerMovement(
+            &player,
+            &angle,
+            playerray,
+            mapa
+        );
 
         BeginDrawing();
-        ClearBackground(WHITE);
 
-        // Desenha o teto e o chão usando gradientes
-        DrawRectangleGradientV(
-        0,
-        0,
-        windowW,
-        windowH/2,
-        (Color){184, 164, 84, 255},
-        BLACK
+        ClearBackground(BLACK);
+
+        // TETO + CHÃO
+        DrawFloorAndCeilingSuperOtimizado(
+            player,
+            angle,
+            floorPixels,
+            ceilPixels,
+            floorTex,
+            ceilTex,
+            screenBuffer,
+            screenTex
         );
 
-        DrawRectangleGradientV(
-        0,
-        windowH/2,
-        windowW,
-        windowH/2,
-        BLACK,
-        (Color){184, 164, 84, 255}
+        // PAREDES
+        CastRay(
+            player,
+            angle,
+            mapa,
+            wallTex
         );
-        // Chama as funções principais do jogo: movimentação do jogador e raycasting para desenhar as paredes
-        PlayerMovement(&player, &angle, playerray, mapa);
-        CastRay(player, angle, mapa, wallTex);
 
         EndDrawing();
     }
 
-    // Fecha a janela do jogo
+    //=========================
+    // LIMPEZA
+    //=========================
+
+    UnloadTexture(wallTex);
+
+    UnloadTexture(floorTex);
+    UnloadTexture(ceilTex);
+
+    UnloadTexture(screenTex);
+
+    UnloadImage(floorImg);
+    UnloadImage(ceilImg);
+
+    UnloadImage(screenBuffer);
+
     CloseWindow();
+
+    return 0;
 }

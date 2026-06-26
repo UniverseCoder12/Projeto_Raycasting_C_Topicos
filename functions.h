@@ -53,118 +53,251 @@ void LoadMap(int mapa[MAP_H][MAP_W])
     fclose(f);
 }
 
-//Raycasting e o desenho das paredes com textura
 void CastRay(Vector2 playerPos, float angle, int mapa[MAP_H][MAP_W], Texture2D wallTex)
 {
     float maxDist = 800;
 
-    // o angulo em que o primeiro raio é lançado
-    float startAngle = angle - FoV/2;
+    float dirX =
+    cosf(angle);
 
-    // quantidade do angulo entre cada raio
-    float angleStep = FoV / NUM_RAYS;
+    float dirY =
+    sinf(angle);
 
-    // largura das colunas dependendo da resolução e da quantidade de raios
+    float planeX =
+    -dirY *
+    tanf(FoV / 2);
+
+    float planeY =
+    dirX *
+    tanf(FoV / 2);
+
     int columnWidth = windowW / NUM_RAYS;
 
     if (columnWidth < 1)
         columnWidth = 1;
 
-    //Lógica de um raio, que é repetida a quantidade de vezes definida pela variável NUM_RAYS
     for (int i = 0; i < NUM_RAYS; i++)
     {
-        //angulo do raio atual
-        float rayAngle = startAngle + i * angleStep;
+        float cameraX =
+            2.0f *
+            i /
+            NUM_RAYS
+            - 1.0f;
 
-        //Posicionamento inicial do raio, que é a posição do jogador
-        float rayX = playerPos.x;
-        float rayY = playerPos.y;
+        float rayDirX =
+            dirX +
+            planeX *
+            cameraX;
 
-        //Vetor de direção do raio, calculado a partir do angulo do raio
-        float dx = cosf(rayAngle);
-        float dy = sinf(rayAngle);
+        float rayDirY =
+            dirY +
+            planeY *
+            cameraX;
 
-        float dist = 0;
+        int mapX = (int)(playerPos.x / TILE);
+        int mapY = (int)(playerPos.y / TILE);
 
-        //O raio avança até atingir a distância máxima ou colidir com uma parede, também calcula a distancia percorrida pelo raio
-        for (; dist < maxDist; dist += 0.5f)
+        float deltaDistX = fabsf(1.0f / rayDirX);
+        float deltaDistY = fabsf(1.0f / rayDirY);
+
+        float sideDistX;
+        float sideDistY;
+
+        int stepX;
+        int stepY;
+
+        int hit = 0;
+        int side;
+
+        if (rayDirX < 0)
         {
-            //Atualiza a posição do raio, avançando na direção dos vetores de direção
-            rayX += dx * 0.5f;
-            rayY += dy * 0.5f;
-
-            //Calcula a posição onde o raio está atualmente no Tilemap
-            int mapX = rayX / TILE;
-            int mapY = rayY / TILE;
-
-            //Verifica se o raio saiu dos limites do mapa ou colidiu com uma parede
-            if (mapX < 0 || mapX >= MAP_W ||
-                mapY < 0 || mapY >= MAP_H)
-            {
-                break;
-            }
-
-            if (mapa[mapY][mapX] == 1)
-            {
-                break;
-            }
-        }
-
-        // Tira a distorção causada pelo efeito Olho de Peixe, corrigindo a distância do raio com base no angulo do raio e do jogador
-        float correctedDist = dist * cosf(rayAngle - angle);
-
-        if (correctedDist < 1)
-            correctedDist = 1;
-
-        // Calcula a distância projetada, que é a distância do plano de projeção ao jogador, e a altura da parede a ser desenhada na tela
-        float projDist = (windowW / 2.0f) / tanf(FoV / 2.0f);
-
-        //Calcula a altura da parede a ser desenhada na tela
-        float wallHeight = (TILE * projDist) / correctedDist;
-
-        // calcula o offset para pegar o pixel correto da textura, dependendo de onde o raio colidiu com a parede
-        float offsetX = fmodf(rayX, TILE);
-        float offsetY = fmodf(rayY, TILE);
-
-        float texX;
-
-        // detecta qual lado bateu usando o offset calculado
-        if (offsetX < 1 || offsetX > TILE - 1)
-        {
-            texX = offsetY;
+            stepX = -1;
+            sideDistX = (playerPos.x / TILE - mapX) * deltaDistX;
         }
         else
         {
-            texX = offsetX;
+            stepX = 1;
+            sideDistX = (mapX + 1.0f - playerPos.x / TILE) * deltaDistX;
         }
 
-        // converte para coordenada da textura, que tem a mesma proporção da parede, e depois para coordenada do pixel da textura
-        texX = (texX / TILE) * wallTex.width;
+        if (rayDirY < 0)
+        {
+            stepY = -1;
+            sideDistY = (playerPos.y / TILE - mapY) * deltaDistY;
+        }
+        else
+        {
+            stepY = 1;
+            sideDistY = (mapY + 1.0f - playerPos.y / TILE) * deltaDistY;
+        }
 
-        int textureX = (int)texX;
+        while (!hit)
+{
+    if (sideDistX < sideDistY)
+    {
+        sideDistX += deltaDistX;
+        mapX += stepX;
+        side = 0;
+    }
+    else
+    {
+        sideDistY += deltaDistY;
+        mapY += stepY;
+        side = 1;
+    }
 
-        if (textureX < 0)
-            textureX = 0;
+    // PRIMEIRO verifica limites
+    if (mapX < 0 || mapX >= MAP_W ||
+        mapY < 0 || mapY >= MAP_H)
+    {
+        break;
+    }
 
-        if (textureX >= wallTex.width)
-            textureX = wallTex.width - 1;
-        // Pega a coluna da textura a ser desenhada
-        Rectangle source = {
-            textureX,
-            0,
-            1,
-            wallTex.height
-        };
-       // Define o retângulo onde a coluna da parede será desenhada na tela
-        Rectangle dest = {
-            i * columnWidth,
-            windowH/2 - wallHeight/2,
-            columnWidth + 1,
-            wallHeight
-        };
-        
-        // Variavel de sobreamento
-        int shade = 255 - (correctedDist * 255 / maxDist);
+    // DEPOIS acessa mapa
+    if (mapa[mapY][mapX] == 1)
+    {
+        hit = 1;
+    }
+}
+
+        // distância perpendicular (sem fish-eye)
+        float perpWallDist;
+
+        if (side == 0)
+        {
+            perpWallDist =
+                (mapX - playerPos.x / TILE + (1 - stepX) / 2.0f)
+                / rayDirX;
+        }
+        else
+        {
+            perpWallDist =
+                (mapY - playerPos.y / TILE + (1 - stepY) / 2.0f)
+                / rayDirY;
+        }
+
+        perpWallDist =
+            fabsf(
+                perpWallDist
+                )
+                *
+                TILE;
+
+        const float MIN_WALL_DIST =
+            16.0f;
+
+        if (perpWallDist < MIN_WALL_DIST)
+        {
+            perpWallDist =
+            MIN_WALL_DIST;
+        }
+
+        // projeção
+        float projDist =
+            (windowW / 2.0f) / tanf(FoV / 2.0f);
+
+        float wallHeight =
+            (TILE * windowH)
+            /
+            perpWallDist;
+
+            // limita altura máxima
+        if (wallHeight > windowH)
+        {
+            wallHeight =
+            windowH;
+        }
+
+        int drawStart =
+            windowH/2 - wallHeight/2;
+
+        int drawEnd =
+            windowH/2 + wallHeight/2;
+
+        if (drawStart < 0) drawStart = 0;
+        if (drawEnd > windowH) drawEnd = windowH;
+
+        // ===== TEXTURA DA PAREDE =====
+// ===== TEXTURA DA PAREDE =====
+
+float wallX;
+
+if (side == 0)
+{
+    wallX =
+        playerPos.y / TILE +
+        (
+            (
+                mapX -
+                playerPos.x / TILE +
+                (1 - stepX) / 2.0f
+            )
+            /
+            rayDirX
+        )
+        *
+        rayDirY;
+}
+else
+{
+    wallX =
+        playerPos.x / TILE +
+        (
+            (
+                mapY -
+                playerPos.y / TILE +
+                (1 - stepY) / 2.0f
+            )
+            /
+            rayDirY
+        )
+        *
+        rayDirX;
+}
+
+// pega só parte decimal
+wallX -= floorf(wallX);
+
+// coluna correta
+int texX =
+(int)(
+wallX *
+wallTex.width
+);
+
+// espelhamento
+if (side == 0 && rayDirX > 0)
+{
+    texX =
+    wallTex.width -
+    texX -
+    1;
+}
+
+if (side == 1 && rayDirY < 0)
+{
+    texX =
+    wallTex.width -
+    texX -
+    1;
+}
+
+Rectangle source = {
+    (float)texX,
+    0,
+    1,
+    (float)wallTex.height
+};
+
+Rectangle dest = {
+    i * columnWidth,
+    drawStart,
+    columnWidth,
+    drawEnd - drawStart
+};
+
+        int shade =
+            255 - (perpWallDist * 255 * 2 / maxDist);
 
         if (shade < 0)
             shade = 0;
@@ -172,7 +305,6 @@ void CastRay(Vector2 playerPos, float angle, int mapa[MAP_H][MAP_W], Texture2D w
         if (shade > 255)
             shade = 255;
 
-        // Define a cor da textura com base na distância
         Color tint = {
             shade,
             shade,
@@ -180,7 +312,6 @@ void CastRay(Vector2 playerPos, float angle, int mapa[MAP_H][MAP_W], Texture2D w
             255
         };
 
-        // Desenha a coluna da parede, que só desenha a parte da textura correspondente à coluna, e com a cor de sobreamento aplicada
         DrawTexturePro(
             wallTex,
             source,
@@ -190,6 +321,159 @@ void CastRay(Vector2 playerPos, float angle, int mapa[MAP_H][MAP_W], Texture2D w
             tint
         );
     }
+}
+
+void DrawFloorAndCeilingSuperOtimizado(Vector2 playerPos,float angle,Color *floorPixels,Color *ceilPixels,Texture2D floorTex,Texture2D ceilTex,Image screenBuffer,Texture2D screenTex)
+{
+    ImageClearBackground(&screenBuffer, BLACK);
+
+    float dirX = cosf(angle);
+    float dirY = sinf(angle);
+
+    float planeX =
+        -dirY * tanf(FoV / 2.0f);
+
+    float planeY =
+        dirX * tanf(FoV / 2.0f);
+
+    for (int y = 0; y < windowH; y++)
+    {
+        bool isFloor =
+            y > windowH / 2;
+
+        float p =
+            isFloor
+            ? y - windowH / 2.0f
+            : windowH / 2.0f - y;
+
+        if (p < 1)
+            p = 1;
+
+        float posZ =
+            0.5f * windowH;
+
+        float rowDistance =
+            posZ / p;
+
+        for (int x = 0; x < windowW; x++)
+        {
+            float cameraX =
+                2.0f *
+                x /
+                (float)windowW
+                - 1.0f;
+
+            float rayDirX =
+                dirX +
+                planeX *
+                cameraX;
+
+            float rayDirY =
+                dirY +
+                planeY *
+                cameraX;
+
+            float worldX =
+                playerPos.x / TILE +
+                rowDistance *
+                rayDirX;
+
+            float worldY =
+                playerPos.y / TILE +
+                rowDistance *
+                rayDirY;
+
+            int tx =
+                (
+                    int
+                    )(
+                    floorTex.width *
+                    (
+                        worldX -
+                        floorf(worldX)
+                    )
+                );
+
+            int ty =
+                (
+                    int
+                    )(
+                    floorTex.height *
+                    (
+                        worldY -
+                        floorf(worldY)
+                    )
+                );
+
+            if (tx < 0)
+                tx += floorTex.width;
+
+            if (ty < 0)
+                ty += floorTex.height;
+
+            tx %= floorTex.width;
+            ty %= floorTex.height;
+
+            Color color;
+
+            if (isFloor)
+            {
+                color =
+                    floorPixels[
+                        ty *
+                        floorTex.width +
+                        tx
+                    ];
+            }
+            else
+            {
+                color =
+                    ceilPixels[
+                        ty *
+                        ceilTex.width +
+                        tx
+                    ];
+            }
+
+            //=====================
+            // SHADING POR DISTÂNCIA
+            //=====================
+
+
+            float shade =
+                expf(
+                    -rowDistance *
+                    0.45f
+                );
+
+            // limite mínimo
+            if (shade < 0.0f)
+                shade = 0.0f;
+
+            color.r *= shade;
+            color.g *= shade;
+            color.b *= shade;
+
+            ImageDrawPixel(
+                &screenBuffer,
+                x,
+                y,
+                color
+            );
+        }
+    }
+
+    UpdateTexture(
+        screenTex,
+        screenBuffer.data
+    );
+
+    DrawTexture(
+        screenTex,
+        0,
+        0,
+        WHITE
+    );
 }
 
 // Função para verificar colisão entre o jogador e as paredes do mapa
