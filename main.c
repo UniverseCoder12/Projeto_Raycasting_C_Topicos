@@ -9,8 +9,11 @@ int main()
     Vector2 player = {100, 100};
     float angle = 0;
     int playerray = 8;
-
+    float sprint = 100.0f;
+    float sprint_stamina = 100.0f;
     int mapa[MAP_H][MAP_W];
+    int vol = 1;
+    int shading = 255;
 
     //=========================
     // CARREGA TEXTURAS
@@ -80,8 +83,9 @@ int main()
             &player,
             &angle,
             playerray,
-            mapa
-        );
+            mapa,
+            &sprint,
+            &sprint_stamina);
 
         BeginDrawing();
 
@@ -106,6 +110,31 @@ int main()
             mapa,
             wallTex
         );
+
+        if (sprint_stamina < 0) {
+            if (shading >= 255) {
+                vol = 0;
+            }
+            if (shading <= 0) {
+                vol = 1;
+            }
+            if (vol == 0) {
+                shading -= 5;
+            } 
+            else {
+                shading += 5;
+            }
+        }
+        else {
+            if (shading < 255) {
+                shading += 5;
+            }
+        }
+        Color sprintColor = (Color){255, 255, 255, shading};
+        DrawRectangleLines(windowW / 2 - 103, windowH - 32, 205, 25, WHITE);
+        DrawRectangle(windowW / 2 - 101, windowH - 30, sprint*2, 20, sprintColor);
+        printf("Sprinting: %.2f, Stamina: %.2f\n", sprint, sprint_stamina);
+
 
         EndDrawing();
     }

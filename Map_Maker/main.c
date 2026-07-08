@@ -68,7 +68,7 @@ void EditMap()
 // Função para salvar o mapa atual no arquivo "map.txt"
 void SaveMap()
 {
-    FILE *f = fopen("map.txt", "w");
+    FILE *f = fopen("../../build/map.txt", "w");
 
     for (int y = 0; y < MAP_H; y++)
     {
