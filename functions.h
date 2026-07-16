@@ -201,7 +201,7 @@ void CastRay(Vector2 playerPos,float angle,int mapa[MAP_H][MAP_W],Texture2D wall
         );
     }
 }
-void DrawFloorAndCeilingSuperOtimizado(Vector2 playerPos,float angle,Color*floorPixels,Color*ceilPixels,Texture2D floorTex,Texture2D ceilTex,Image screenBuffer,Texture2D screenTex)
+void DrawFloorAndCeiling(Vector2 playerPos,float angle,Color*floorPixels,Color*ceilPixels,Texture2D floorTex,Texture2D ceilTex,Image screenBuffer,Texture2D screenTex)
 {
     ImageClearBackground(&screenBuffer,BLACK);
 
