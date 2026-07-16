@@ -92,7 +92,7 @@ int main()
         ClearBackground(BLACK);
 
         // TETO + CHÃO
-        DrawFloorAndCeilingSuperOtimizado(
+        DrawFloorAndCeiling(
             player,
             angle,
             floorPixels,
