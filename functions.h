@@ -8,6 +8,18 @@
 #define TILE 64
 #define FoV (PI/3)
 #define NUM_RAYS 640
+
+typedef struct Enemy
+{
+    Vector2 pos;
+    bool alive;
+    
+    int frame;
+    int frameCount;
+    int frameWidth;
+    int frameHeight;
+} Enemy;
+
 void LoadMap(int mapa[MAP_H][MAP_W])
 {
     FILE*f=fopen("map.txt","r");
@@ -24,7 +36,120 @@ void LoadMap(int mapa[MAP_H][MAP_W])
 
     fclose(f);
 }
-void CastRay(Vector2 playerPos,float angle,int mapa[MAP_H][MAP_W],Texture2D wallTex)
+
+void DrawEnemy(
+    Vector2 playerPos,
+    float angle,
+    Enemy enemy,
+    Texture2D enemyTex,
+    float zBuffer[]
+)
+{
+    if (!enemy.alive)
+        return;
+
+    float dirX = cosf(angle);
+    float dirY = sinf(angle);
+
+    float planeX = -dirY * tanf(FoV/2);
+    float planeY =  dirX * tanf(FoV/2);
+
+    float spriteX = enemy.pos.x - playerPos.x;
+    float spriteY = enemy.pos.y - playerPos.y;
+
+    float invDet =
+        1.0f /
+        (planeX*dirY - dirX*planeY);
+
+    float transformX =
+        invDet *
+        (dirY*spriteX - dirX*spriteY);
+
+    float transformY =
+        invDet *
+        (-planeY*spriteX + planeX*spriteY);
+
+    if (transformY <= 0.1f)
+        return;
+
+    int spriteScreenX =
+        (int)(((windowW/2) * (1 + transformX/transformY)));
+
+    float projDist =
+        (windowW/2.0f) /
+        tanf(FoV/2);
+
+    int spriteHeight =
+        fabs((int)((TILE * projDist) / transformY));
+
+    int spriteWidth = spriteHeight/2;
+
+    int drawStartY =
+        windowH/2 - spriteHeight/2;
+
+    int drawEndY =
+        drawStartY + spriteHeight;
+
+    int drawStartX =
+        spriteScreenX - spriteWidth/2;
+
+    int drawEndX =
+        spriteScreenX + spriteWidth/2;
+
+    static int anim = 0;
+    static int frame = 0;
+    if (anim == 0){
+        frame += 1;
+        if(frame > 11)frame = 0;
+    }
+    else {
+        if (anim == 3){
+        anim = -1;
+    }
+    }
+    anim++;
+
+    for (int stripe = drawStartX; stripe < drawEndX; stripe++)
+    {
+        if (stripe < 0 || stripe >= windowW)
+            continue;
+
+        int ray =
+            stripe * NUM_RAYS / windowW;
+
+        if (transformY >= zBuffer[ray])
+            continue;
+
+        int texX = (stripe - drawStartX) * enemy.frameWidth/spriteWidth;
+
+        Rectangle src =
+        {
+            frame * enemy.frameWidth + texX,
+            0,
+            1,
+            enemy.frameHeight
+        };
+
+        Rectangle dst =
+        {
+            stripe,
+            drawStartY,
+            1,
+            spriteHeight
+        };
+
+        DrawTexturePro(
+            enemyTex,
+            src,
+            dst,
+            (Vector2){0,0},
+            0,
+            WHITE
+        );
+    }
+}
+
+void CastRay(Vector2 playerPos,float angle,int mapa[MAP_H][MAP_W],Texture2D wallTex, float zBuffer[])
 {
     float maxDist=800;
 
@@ -128,17 +253,8 @@ void CastRay(Vector2 playerPos,float angle,int mapa[MAP_H][MAP_W],Texture2D wall
         float projDist = (windowW/2.0f)/tanf(FoV/2.0f);
         float wallHeight = (TILE * windowH) / perpWallDist;
 
-        if(wallHeight>windowH)
-        {
-            wallHeight = windowH;
-        }
-
         int drawStart = windowH / 2 - wallHeight / 2;
         int drawEnd = windowH / 2 + wallHeight / 2;
-
-        if(drawStart<0) drawStart = 0;
-
-        if(drawEnd>windowH) drawEnd = windowH;
 
         float wallX;
 
@@ -199,6 +315,7 @@ void CastRay(Vector2 playerPos,float angle,int mapa[MAP_H][MAP_W],Texture2D wall
         0,
         tint
         );
+        zBuffer[i] = perpWallDist;
     }
 }
 void DrawFloorAndCeilingSuperOtimizado(Vector2 playerPos,float angle,Color*floorPixels,Color*ceilPixels,Texture2D floorTex,Texture2D ceilTex,Image screenBuffer,Texture2D screenTex)

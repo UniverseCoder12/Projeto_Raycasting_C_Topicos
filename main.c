@@ -14,6 +14,26 @@ int main()
     int mapa[MAP_H][MAP_W];
     int vol = 1;
     int shading = 255;
+    float zBuffer[NUM_RAYS];
+
+    SetExitKey(KEY_P);
+    
+    typedef enum EstadoJogo {
+        MENU,       // Estado que exibe o menu principal e opções do usuário
+        JOGANDO    // Estado ativo de simulação de voo com a nave espacial
+    } EstadoJogo;
+
+    EstadoJogo estadoAtual = MENU;
+
+    Enemy enemy = {
+        .pos = {300, 300},
+        .alive = true,
+        .frame = 0,
+        .frameCount = 11,
+        .frameWidth = 64,
+        .frameHeight = 128
+    };
+    Texture2D enemyTex = LoadTexture("enemy.png");
 
     //=========================
     // CARREGA TEXTURAS
@@ -67,17 +87,69 @@ int main()
 
     LoadMap(mapa);
 
+    int opcaoSelecionada = 1;
+
+    bool fecharJogo = false;
+
     //=========================
     // LOOP PRINCIPAL
     //=========================
 
-    while (!WindowShouldClose())
+    while (!WindowShouldClose() && !fecharJogo)
     {
+        BeginDrawing();
+        switch (estadoAtual) {
+
+            case MENU: {
+                // Captura de entrada discreta (apenas um evento por clique) para navegar no menu 
+                ClearBackground(BLACK); 
+                if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) {
+                    opcaoSelecionada = 1; // Seleciona a opção "Fechar"
+                }
+                if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)) {
+                    opcaoSelecionada = 0; // Seleciona a opção "Jogar"
+                }
+
+                // Processamento de seleção de opções ao pressionar a tecla ENTER 
+                if (IsKeyPressed(KEY_ENTER)) {
+                    if (opcaoSelecionada == 0) {
+                        estadoAtual = JOGANDO; // Muda o estado ativo para a jogabilidade
+                    } else if (opcaoSelecionada == 1) {
+                        fecharJogo = true; // Define a flag para encerrar o jogo com segurança
+                    }
+                }
+                const char* title = "Back Room";
+                int titleWidth = MeasureText(title, 44); // Calcula a largura do texto em pixels
+                DrawText(title, windowW / 2 - titleWidth / 2, 150, 44, GOLD); // [1, 19]
+
+                // Renderização das opções interativas do menu com estilização dinâmica
+                if (opcaoSelecionada == 0) {
+                    // Estado visual quando "JOGAR" está em foco
+                    DrawText("> JOGAR <", windowW / 2 - MeasureText("> JOGAR <", 24) / 2, 320, 24, RAYWHITE);
+                    DrawText("FECHAR", windowW / 2 - MeasureText("FECHAR", 20) / 2, 380, 20, GRAY);
+                } else {
+                    // Estado visual quando "FECHAR" está em foco
+                    DrawText("JOGAR", windowW / 2 - MeasureText("JOGAR", 20) / 2, 320, 20, GRAY);
+                    DrawText("> FECHAR <", windowW / 2 - MeasureText("> FECHAR <", 24) / 2, 380, 24, RAYWHITE);
+                }
+
+                // Exibição do rodapé com instruções gerais ao usuário
+                const char* footer = "Navegue com W/S ou Setas e selecione com Enter";
+                int footerWidth = MeasureText(footer, 14);
+                DrawText(footer, windowW / 2 - footerWidth / 2, 520, 14, DARKGRAY);
+                break;
+            }
+            case JOGANDO: {
+
+        if (IsKeyPressed(KEY_ESCAPE)) {
+                    estadoAtual = MENU; // Altera o estado sem fechar o programa de maneira abrupta [7]
+                }
+
         if (IsKeyDown(KEY_A))
-            angle -= 0.05f;
+            angle -= 0.07f;
 
         if (IsKeyDown(KEY_D))
-            angle += 0.05f;
+            angle += 0.07f;
 
         PlayerMovement(
             &player,
@@ -86,8 +158,6 @@ int main()
             mapa,
             &sprint,
             &sprint_stamina);
-
-        BeginDrawing();
 
         ClearBackground(BLACK);
 
@@ -108,7 +178,16 @@ int main()
             player,
             angle,
             mapa,
-            wallTex
+            wallTex,
+            zBuffer
+        );
+
+        DrawEnemy(
+            player,
+            angle,
+            enemy,
+            enemyTex,
+            zBuffer
         );
 
         if (sprint_stamina < 0) {
@@ -134,7 +213,8 @@ int main()
         DrawRectangleLines(windowW / 2 - 103, windowH - 32, 205, 25, WHITE);
         DrawRectangle(windowW / 2 - 101, windowH - 30, sprint*2, 20, sprintColor);
         printf("Sprinting: %.2f, Stamina: %.2f\n", sprint, sprint_stamina);
-
+        }
+    }
 
         EndDrawing();
     }
