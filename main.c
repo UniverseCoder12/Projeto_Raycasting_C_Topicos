@@ -1,5 +1,10 @@
 #include "raylib.h"
-#include "functions.h"
+#include "metodos.c"
+
+typedef enum EstadoJogo {
+        MENU,       
+        JOGANDO    
+    } EstadoJogo;
 
 int main()
 {
@@ -17,11 +22,6 @@ int main()
     float zBuffer[NUM_RAYS];
 
     SetExitKey(KEY_P);
-    
-    typedef enum EstadoJogo {
-        MENU,       // Estado que exibe o menu principal e opções do usuário
-        JOGANDO    // Estado ativo de simulação de voo com a nave espacial
-    } EstadoJogo;
 
     EstadoJogo estadoAtual = MENU;
 
@@ -35,105 +35,65 @@ int main()
     };
     Texture2D enemyTex = LoadTexture("enemy.png");
 
-    //=========================
-    // CARREGA TEXTURAS
-    //=========================
+    Texture2D wallTex = LoadTexture("wall.png");
 
-    Texture2D wallTex =
-        LoadTexture("wall.png");
+    Image floorImg = LoadImage("floortexture.png");
 
-    Image floorImg =
-        LoadImage("floortexture.png");
+    Image ceilImg = LoadImage("ceiltexture.png");
 
-    Image ceilImg =
-        LoadImage("ceiltexture.png");
+    Texture2D floorTex = LoadTextureFromImage(floorImg);
 
-    Texture2D floorTex =
-        LoadTextureFromImage(floorImg);
+    Texture2D ceilTex = LoadTextureFromImage(ceilImg);
 
-    Texture2D ceilTex =
-        LoadTextureFromImage(ceilImg);
+    Color *floorPixels = (Color *)floorImg.data;
 
-    Color *floorPixels =
-        (Color *)floorImg.data;
+    Color *ceilPixels = (Color *)ceilImg.data;
 
-    Color *ceilPixels =
-        (Color *)ceilImg.data;
+    SetTextureFilter( wallTex, TEXTURE_FILTER_BILINEAR);
 
-    SetTextureFilter(
-        wallTex,
-        TEXTURE_FILTER_BILINEAR
-    );
+    Image screenBuffer = GenImageColor(windowW, windowH, BLACK);
 
-    //=========================
-    // BUFFER DA TELA
-    //=========================
+    Texture2D screenTex = LoadTextureFromImage(screenBuffer);
 
-    Image screenBuffer =
-        GenImageColor(
-            windowW,
-            windowH,
-            BLACK
-        );
-
-    Texture2D screenTex =
-        LoadTextureFromImage(
-            screenBuffer
-        );
-
-    //=========================
-    // MAPA
-    //=========================
-
-    LoadMap(mapa);
+    loadMap(mapa);
 
     int opcaoSelecionada = 1;
 
     bool fecharJogo = false;
-
-    //=========================
-    // LOOP PRINCIPAL
-    //=========================
 
     while (!WindowShouldClose() && !fecharJogo)
     {
         BeginDrawing();
         switch (estadoAtual) {
 
-            case MENU: {
-                // Captura de entrada discreta (apenas um evento por clique) para navegar no menu 
+            case MENU: { 
                 ClearBackground(BLACK); 
                 if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) {
-                    opcaoSelecionada = 1; // Seleciona a opção "Fechar"
+                    opcaoSelecionada = 1; 
                 }
                 if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)) {
-                    opcaoSelecionada = 0; // Seleciona a opção "Jogar"
+                    opcaoSelecionada = 0; 
                 }
 
-                // Processamento de seleção de opções ao pressionar a tecla ENTER 
                 if (IsKeyPressed(KEY_ENTER)) {
                     if (opcaoSelecionada == 0) {
-                        estadoAtual = JOGANDO; // Muda o estado ativo para a jogabilidade
+                        estadoAtual = JOGANDO; 
                     } else if (opcaoSelecionada == 1) {
-                        fecharJogo = true; // Define a flag para encerrar o jogo com segurança
+                        fecharJogo = true; 
                     }
                 }
                 const char* title = "Back Room";
-                int titleWidth = MeasureText(title, 44); // Calcula a largura do texto em pixels
+                int titleWidth = MeasureText(title, 44);
                 DrawText(title, windowW / 2 - titleWidth / 2, 150, 44, GOLD); // [1, 19]
 
-                // Renderização das opções interativas do menu com estilização dinâmica
                 if (opcaoSelecionada == 0) {
-                    // Estado visual quando "JOGAR" está em foco
                     DrawText("> JOGAR <", windowW / 2 - MeasureText("> JOGAR <", 24) / 2, 320, 24, RAYWHITE);
                     DrawText("FECHAR", windowW / 2 - MeasureText("FECHAR", 20) / 2, 380, 20, GRAY);
                 } else {
-                    // Estado visual quando "FECHAR" está em foco
                     DrawText("JOGAR", windowW / 2 - MeasureText("JOGAR", 20) / 2, 320, 20, GRAY);
                     DrawText("> FECHAR <", windowW / 2 - MeasureText("> FECHAR <", 24) / 2, 380, 24, RAYWHITE);
                 }
 
-                // Exibição do rodapé com instruções gerais ao usuário
                 const char* footer = "Navegue com W/S ou Setas e selecione com Enter";
                 int footerWidth = MeasureText(footer, 14);
                 DrawText(footer, windowW / 2 - footerWidth / 2, 520, 14, DARKGRAY);
@@ -142,7 +102,7 @@ int main()
             case JOGANDO: {
 
         if (IsKeyPressed(KEY_ESCAPE)) {
-                    estadoAtual = MENU; // Altera o estado sem fechar o programa de maneira abrupta [7]
+                    estadoAtual = MENU;
                 }
 
         if (IsKeyDown(KEY_A))
@@ -151,44 +111,15 @@ int main()
         if (IsKeyDown(KEY_D))
             angle += 0.07f;
 
-        PlayerMovement(
-            &player,
-            &angle,
-            playerray,
-            mapa,
-            &sprint,
-            &sprint_stamina);
+        playerMovement(&player,&angle,playerray,mapa,&sprint,&sprint_stamina);
 
         ClearBackground(BLACK);
 
-        // TETO + CHÃO
-        DrawFloorAndCeilingSuperOtimizado(
-            player,
-            angle,
-            floorPixels,
-            ceilPixels,
-            floorTex,
-            ceilTex,
-            screenBuffer,
-            screenTex
-        );
+        drawFloorAndCeiling(player, angle, floorPixels, ceilPixels, floorTex, ceilTex, screenBuffer, screenTex);
 
-        // PAREDES
-        CastRay(
-            player,
-            angle,
-            mapa,
-            wallTex,
-            zBuffer
-        );
+        castRay(player,angle,mapa,wallTex,zBuffer);
 
-        DrawEnemy(
-            player,
-            angle,
-            enemy,
-            enemyTex,
-            zBuffer
-        );
+        drawEnemy(player,angle,enemy,enemyTex,zBuffer);
 
         if (sprint_stamina < 0) {
             if (shading >= 255) {
@@ -218,10 +149,6 @@ int main()
 
         EndDrawing();
     }
-
-    //=========================
-    // LIMPEZA
-    //=========================
 
     UnloadTexture(wallTex);
 

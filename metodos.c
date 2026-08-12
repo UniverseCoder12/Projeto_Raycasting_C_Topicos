@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include "metodos.h"
 #include <math.h>
 #include <stdio.h>
 #define MAP_W 20
@@ -20,7 +21,7 @@ typedef struct Enemy
     int frameHeight;
 } Enemy;
 
-void LoadMap(int mapa[MAP_H][MAP_W])
+void loadMap(int mapa[MAP_H][MAP_W])
 {
     FILE*f=fopen("map.txt","r");
 
@@ -37,13 +38,7 @@ void LoadMap(int mapa[MAP_H][MAP_W])
     fclose(f);
 }
 
-void DrawEnemy(
-    Vector2 playerPos,
-    float angle,
-    Enemy enemy,
-    Texture2D enemyTex,
-    float zBuffer[]
-)
+void drawEnemy(Vector2 playerPos,float angle,Enemy enemy,Texture2D enemyTex,float zBuffer[])
 {
     if (!enemy.alive)
         return;
@@ -57,47 +52,33 @@ void DrawEnemy(
     float spriteX = enemy.pos.x - playerPos.x;
     float spriteY = enemy.pos.y - playerPos.y;
 
-    float invDet =
-        1.0f /
-        (planeX*dirY - dirX*planeY);
+    float invDet = 1.0f / (planeX*dirY - dirX*planeY);
 
-    float transformX =
-        invDet *
-        (dirY*spriteX - dirX*spriteY);
+    float transformX = invDet * (dirY*spriteX - dirX*spriteY);
 
-    float transformY =
-        invDet *
-        (-planeY*spriteX + planeX*spriteY);
+    float transformY = invDet * (-planeY*spriteX + planeX*spriteY);
 
-    if (transformY <= 0.1f)
-        return;
+    if (transformY <= 0.1f) return;
 
-    int spriteScreenX =
-        (int)(((windowW/2) * (1 + transformX/transformY)));
+    int spriteScreenX = (int)(((windowW/2) * (1 + transformX/transformY)));
 
-    float projDist =
-        (windowW/2.0f) /
-        tanf(FoV/2);
+    float projDist = (windowW/2.0f) / tanf(FoV/2);
 
-    int spriteHeight =
-        fabs((int)((TILE * projDist) / transformY));
+    int spriteHeight = fabs((int)((TILE * projDist) / transformY));
 
     int spriteWidth = spriteHeight/2;
 
-    int drawStartY =
-        windowH/2 - spriteHeight/2;
+    int drawStartY = windowH/2 - spriteHeight/2;
 
-    int drawEndY =
-        drawStartY + spriteHeight;
+    int drawEndY = drawStartY + spriteHeight;
 
-    int drawStartX =
-        spriteScreenX - spriteWidth/2;
+    int drawStartX = spriteScreenX - spriteWidth/2;
 
-    int drawEndX =
-        spriteScreenX + spriteWidth/2;
+    int drawEndX = spriteScreenX + spriteWidth/2;
 
     static int anim = 0;
     static int frame = 0;
+
     if (anim == 0){
         frame += 1;
         if(frame > 11)frame = 0;
@@ -111,45 +92,23 @@ void DrawEnemy(
 
     for (int stripe = drawStartX; stripe < drawEndX; stripe++)
     {
-        if (stripe < 0 || stripe >= windowW)
-            continue;
+        if (stripe < 0 || stripe >= windowW) continue;
 
-        int ray =
-            stripe * NUM_RAYS / windowW;
+        int ray = stripe * NUM_RAYS / windowW;
 
-        if (transformY >= zBuffer[ray])
-            continue;
+        if (transformY >= zBuffer[ray]) continue;
 
         int texX = (stripe - drawStartX) * enemy.frameWidth/spriteWidth;
 
-        Rectangle src =
-        {
-            frame * enemy.frameWidth + texX,
-            0,
-            1,
-            enemy.frameHeight
-        };
+        Rectangle src = {frame * enemy.frameWidth + texX, 0, 1, enemy.frameHeight};
 
-        Rectangle dst =
-        {
-            stripe,
-            drawStartY,
-            1,
-            spriteHeight
-        };
+        Rectangle dst = {stripe, drawStartY, 1, spriteHeight};
 
-        DrawTexturePro(
-            enemyTex,
-            src,
-            dst,
-            (Vector2){0,0},
-            0,
-            WHITE
-        );
+        DrawTexturePro(enemyTex, src, dst, (Vector2){0,0}, 0, WHITE);
     }
 }
 
-void CastRay(Vector2 playerPos,float angle,int mapa[MAP_H][MAP_W],Texture2D wallTex, float zBuffer[])
+void castRay(Vector2 playerPos,float angle,int mapa[MAP_H][MAP_W],Texture2D wallTex, float zBuffer[])
 {
     float maxDist=800;
 
@@ -281,44 +240,22 @@ void CastRay(Vector2 playerPos,float angle,int mapa[MAP_H][MAP_W],Texture2D wall
             texX = wallTex.width - texX - 1;
         }
 
-        Rectangle source={
-            (float)texX,
-            0,
-            1,
-            (float)wallTex.height
-        };
+        Rectangle source = {(float)texX, 0, 1, (float)wallTex.height};
 
-        Rectangle dest={
-            i*columnWidth,
-            drawStart,
-            columnWidth,
-            drawEnd-drawStart
-        };
+        Rectangle dest = {i*columnWidth, drawStart, columnWidth, drawEnd-drawStart};
 
         int shade= 255 - (perpWallDist * 255 * 4 / maxDist);
 
         if(shade<0) shade = 0;
         if(shade>255) shade = 255;
 
-        Color tint={
-            shade,
-            shade,
-            shade,
-            255
-        };
+        Color tint = {shade, shade, shade, 255};
         
-        DrawTexturePro(
-        wallTex,
-        source,
-        dest,
-        (Vector2){0,0},
-        0,
-        tint
-        );
+        DrawTexturePro(wallTex, source, dest, (Vector2){0,0}, 0, tint);
         zBuffer[i] = perpWallDist;
     }
 }
-void DrawFloorAndCeilingSuperOtimizado(Vector2 playerPos,float angle,Color*floorPixels,Color*ceilPixels,Texture2D floorTex,Texture2D ceilTex,Image screenBuffer,Texture2D screenTex)
+void drawFloorAndCeiling(Vector2 playerPos,float angle,Color*floorPixels,Color*ceilPixels,Texture2D floorTex,Texture2D ceilTex,Image screenBuffer,Texture2D screenTex)
 {
     ImageClearBackground(&screenBuffer,BLACK);
 
@@ -334,6 +271,7 @@ void DrawFloorAndCeilingSuperOtimizado(Vector2 playerPos,float angle,Color*floor
         if(p<1) p = 1;
         float posZ = 0.5f * windowH;
         float rowDistance = posZ/p;
+
         for(int x=0;x<windowW;x++) {
             float cameraX = 2.0f * x/(float)windowW - 1.0f;
 
@@ -369,19 +307,14 @@ void DrawFloorAndCeilingSuperOtimizado(Vector2 playerPos,float angle,Color*floor
             color.g*=shade;
             color.b*=shade;
             
-            ImageDrawPixel(
-                &screenBuffer,
-                x,
-                y,
-                color
-            );
+            ImageDrawPixel(&screenBuffer, x, y, color);
         }
     }
 
     UpdateTexture(screenTex,screenBuffer.data);
     DrawTexture(screenTex,0,0,WHITE);
 }
-bool CheckCollisionCircleMap(Vector2 pos,float radius,int mapa[MAP_H][MAP_W]) {
+bool checkCollisionCircleMap(Vector2 pos,float radius,int mapa[MAP_H][MAP_W]) {
     int left = (pos.x-radius)/TILE;
     int right = (pos.x+radius)/TILE;
     int top = (pos.y-radius)/TILE;
@@ -406,7 +339,7 @@ bool CheckCollisionCircleMap(Vector2 pos,float radius,int mapa[MAP_H][MAP_W]) {
 
     return false;
 }
-void PlayerMovement(Vector2*playerPos,float*angle,float radius,int mapa[MAP_H][MAP_W],float*sprint,float*sprint_stamina) {
+void playerMovement(Vector2*playerPos,float*angle,float radius,int mapa[MAP_H][MAP_W],float*sprint,float*sprint_stamina) {
     float speed=1.5f;
 
     if(IsKeyDown(KEY_LEFT_SHIFT)&&*sprint>0 &&*sprint_stamina>0) {
@@ -435,7 +368,7 @@ void PlayerMovement(Vector2*playerPos,float*angle,float radius,int mapa[MAP_H][M
         newPos.y -= sinf(*angle) * speed;
     }
     
-    if(!CheckCollisionCircleMap(newPos,radius,mapa))
+    if(!checkCollisionCircleMap(newPos,radius,mapa))
     {
         *playerPos=newPos;
     }
