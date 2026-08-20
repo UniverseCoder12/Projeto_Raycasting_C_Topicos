@@ -344,13 +344,13 @@ void playerMovement(Vector2*playerPos,float*angle,float radius,int mapa[MAP_H][M
 
     if(IsKeyDown(KEY_LEFT_SHIFT)&&*sprint>0 &&*sprint_stamina>0) {
         speed = 3.0f;
-        *sprint -= 0.2f;
-        *sprint_stamina =* sprint_stamina - 0.2f;
+        *sprint -= 0.21875f;
+        *sprint_stamina =* sprint_stamina - 0.21875f;
     }
     else {
         speed = 1.5f;
-        if(*sprint<100.0f) *sprint += 0.1f;
-        if(*sprint_stamina<100.0f) *sprint_stamina += 0.1f;
+        if(*sprint<100.0f) *sprint += 0.109375f;
+        if(*sprint_stamina<100.0f) *sprint_stamina += 0.109375f;
         if(*sprint<=0.0f) *sprint_stamina =- 100.0f;
         if(*sprint>=100.0f) *sprint_stamina = 100.0f;
     }
