@@ -23,7 +23,7 @@ typedef struct Enemy
 
 void loadMap(int mapa[MAP_H][MAP_W])
 {
-    FILE*f=fopen("map.txt","r");
+    FILE*f=fopen("../map/map.txt","r");
 
     if(!f)return;
 
