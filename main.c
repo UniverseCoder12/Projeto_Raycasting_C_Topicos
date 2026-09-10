@@ -33,13 +33,13 @@ int main()
         .frameWidth = 64,
         .frameHeight = 128
     };
-    Texture2D enemyTex = LoadTexture("enemy.png");
+    Texture2D enemyTex = LoadTexture("../images/enemy.png");
 
-    Texture2D wallTex = LoadTexture("wall.png");
+    Texture2D wallTex = LoadTexture("../images/wall.png");
 
-    Image floorImg = LoadImage("floortexture.png");
+    Image floorImg = LoadImage("../images/floortexture.png");
 
-    Image ceilImg = LoadImage("ceiltexture.png");
+    Image ceilImg = LoadImage("../images/ceiltexture.png");
 
     Texture2D floorTex = LoadTextureFromImage(floorImg);
 
