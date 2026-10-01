@@ -10,17 +10,6 @@
 #define FoV (PI/3)
 #define NUM_RAYS 640
 
-typedef struct Enemy
-{
-    Vector2 pos;
-    bool alive;
-    
-    int frame;
-    int frameCount;
-    int frameWidth;
-    int frameHeight;
-} Enemy;
-
 void loadMap(int mapa[MAP_H][MAP_W])
 {
     FILE*f=fopen("../map/map.txt","r");
@@ -371,5 +360,130 @@ void playerMovement(Vector2*playerPos,float*angle,float radius,int mapa[MAP_H][M
     if(!checkCollisionCircleMap(newPos,radius,mapa))
     {
         *playerPos=newPos;
+    }
+}
+
+Node* criar_lista(void) {
+    Node *cabecalho = (Node*) malloc(sizeof(Node));
+    if (cabecalho == NULL) {
+        printf("Erro crítico: Falha na alocação de memória para o nó cabeçalho.\n");
+        return NULL;
+    }
+    cabecalho->data = 0;
+    cabecalho->item_id = 0;
+    cabecalho->prev = NULL;
+    cabecalho->next = NULL;
+    return cabecalho;
+}
+
+
+bool inserir_inicio(Node *cabecalho, int quant, int id) {
+    if (cabecalho == NULL) return false;
+
+    Node *novo_no = (Node*) malloc(sizeof(Node));
+    if (novo_no == NULL) {
+        printf("Erro: Falha na alocação de memória para novo nó.\n");
+        return false;
+    }
+
+    novo_no->data = quant;
+    novo_no->item_id = id;
+    novo_no->prev = cabecalho;
+    novo_no->next = cabecalho->next;
+    cabecalho->next->prev = novo_no;
+    cabecalho->next = novo_no;
+
+    return true;
+}
+
+
+bool inserir_fim(Node *cabecalho, int valor, int id) {
+    if (cabecalho == NULL) return false;
+
+    Node *novo_no = (Node*) malloc(sizeof(Node));
+    if (novo_no == NULL) {
+        printf("Erro: Falha na alocação de memória para novo nó.\n");
+        return false;
+    }
+
+    novo_no->data = valor;
+    novo_no->item_id = id;
+    novo_no->next = NULL;
+
+    Node *atual = cabecalho;
+    while (atual->next != NULL) {
+        atual = atual->next;
+    }
+    
+    atual->next = novo_no;
+    novo_no->prev = atual;
+    return true;
+}
+
+
+Node* buscar(Node *cabecalho, int id) {
+    if (cabecalho == NULL) return NULL;
+
+    Node *atual = cabecalho->next;
+    while (atual != NULL) {
+        if (atual->item_id == id) {
+            return atual;
+        }
+        atual = atual->next;
+    }
+    return NULL;
+}
+
+
+bool remover(Node *cabecalho, int id) {
+    if (cabecalho == NULL || cabecalho->next == NULL) {
+        return false;
+    }
+
+    Node *anterior = cabecalho;
+    Node *atual = cabecalho->next;
+    Node *proximo = cabecalho->next->next;
+
+    while (atual != NULL && atual->item_id != id) {
+        anterior = atual;
+        atual = atual->next;
+        proximo = atual->next;
+    }
+
+    if (atual == NULL) {
+        return false;
+    }
+
+    anterior->next = atual->next;
+    if (atual->next != NULL) {
+        atual->next->prev = anterior;
+    }
+
+    free(atual);
+    return true;
+}
+
+
+void exibir_lista(Node *cabecalho) {
+    if (cabecalho == NULL) return;
+
+    Node *atual = cabecalho->next;
+    printf("NULL <- Cabeçalho -> ");
+    while (atual != NULL) {
+        printf("<- [%d] -> ", atual->data);
+        atual = atual->next;
+    }
+    printf("NULL\n");
+}
+
+
+void destruir_lista(Node *cabecalho) {
+    if (cabecalho == NULL) return;
+
+    Node *atual = cabecalho;
+    while (atual != NULL) /* Definição da estrutura de um nó da lista encadeada */{
+        Node *proximo = atual->next;
+        free(atual);
+        atual = proximo;
     }
 }

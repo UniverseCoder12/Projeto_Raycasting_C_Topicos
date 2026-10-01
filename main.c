@@ -1,9 +1,16 @@
 #include "raylib.h"
 #include "metodos.c"
+#define INVENTARIO_COLUNAS 4
+#define INVENTARIO_LINHAS 4
+#define INVENTARIO_SLOTS 16
+
+#define SLOT_SIZE 100
+#define SLOT_ESPACO 15
 
 typedef enum EstadoJogo {
         MENU,       
-        JOGANDO    
+        JOGANDO,
+        INVENTARIO    
     } EstadoJogo;
 
 int main()
@@ -11,6 +18,8 @@ int main()
     InitWindow(windowW, windowH, "Raycaster");
     SetTargetFPS(60);
 
+    Node *inventory = criar_lista();
+    inserir_fim(inventory, 10, 1);
     Vector2 player = {100, 100};
     float angle = 0;
     int playerray = 8;
@@ -105,6 +114,10 @@ int main()
                     estadoAtual = MENU;
                 }
 
+        if (IsKeyPressed(KEY_E)) {
+                    estadoAtual = INVENTARIO;
+                }
+
         if (IsKeyDown(KEY_A))
             angle -= 0.07f;
 
@@ -144,6 +157,52 @@ int main()
         DrawRectangleLines(windowW / 2 - 103, windowH - 32, 205, 25, WHITE);
         DrawRectangle(windowW / 2 - 101, windowH - 30, sprint*2, 20, sprintColor);
         printf("Sprinting: %.2f, Stamina: %.2f\n", sprint, sprint_stamina);
+        break;
+        }
+
+        case INVENTARIO: {
+            ClearBackground(BLACK);
+
+            if (IsKeyPressed(KEY_E)) {
+                    estadoAtual = JOGANDO;
+                }
+
+            int inicioX = 100;
+            int inicioY = 100;
+            Color rectangleColor = (Color){55, 55, 55, 255};
+            Vector2 mouse = GetMousePosition();
+
+            for (int linha = 0; linha < INVENTARIO_LINHAS; linha++)
+            {
+                for (int coluna = 0; coluna < INVENTARIO_COLUNAS; coluna++)
+                {
+                    int x = inicioX + coluna * (SLOT_SIZE + SLOT_ESPACO);
+                    int y = inicioY + linha * (SLOT_SIZE + SLOT_ESPACO);
+                    if (mouse.x >= x && mouse.x <= x+SLOT_SIZE && mouse.y >= y && mouse.y <= y+SLOT_SIZE){
+                        rectangleColor = (Color){155, 155, 155, 255};
+                    }
+                    else{
+                        rectangleColor = (Color){55, 55, 55, 255};
+                    }
+
+                    DrawRectangle(
+                        x,
+                        y,
+                        SLOT_SIZE,
+                        SLOT_SIZE,
+                        rectangleColor
+                    );
+
+                    DrawRectangleLines(
+                        x,
+                        y,
+                        SLOT_SIZE,
+                        SLOT_SIZE,
+                        WHITE
+                    );
+                }
+            }
+
         }
     }
 
