@@ -11,7 +11,7 @@ endif()
 
 ########### VARIABLES #######################################################################
 #############################################################################################
-set(opengl_PACKAGE_FOLDER_RELEASE "C:/Users/User/.conan2/p/opengb4dfd9d76a483/p")
+set(opengl_PACKAGE_FOLDER_RELEASE "/home/discente/.conan2/p/opengb4dfd9d76a483/p")
 set(opengl_BUILD_MODULES_PATHS_RELEASE )
 
 
@@ -27,9 +27,9 @@ set(opengl_COMPILE_OPTIONS_CXX_RELEASE )
 set(opengl_LIB_DIRS_RELEASE )
 set(opengl_BIN_DIRS_RELEASE )
 set(opengl_LIBRARY_TYPE_RELEASE SHARED)
-set(opengl_IS_HOST_WINDOWS_RELEASE 1)
+set(opengl_IS_HOST_WINDOWS_RELEASE 0)
 set(opengl_LIBS_RELEASE )
-set(opengl_SYSTEM_LIBS_RELEASE opengl32)
+set(opengl_SYSTEM_LIBS_RELEASE GL)
 set(opengl_FRAMEWORK_DIRS_RELEASE )
 set(opengl_FRAMEWORKS_RELEASE )
 set(opengl_BUILD_DIRS_RELEASE )

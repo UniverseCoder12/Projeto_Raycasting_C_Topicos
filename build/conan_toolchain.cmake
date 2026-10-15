@@ -148,9 +148,9 @@ list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 # Definition of CMAKE_PREFIX_PATH, CMAKE_XXXXX_PATH
 # The Conan local "generators" folder, where this toolchain is saved.
 list(PREPEND CMAKE_PREFIX_PATH ${CMAKE_CURRENT_LIST_DIR} )
-list(PREPEND CMAKE_LIBRARY_PATH "C:/Users/User/.conan2/p/b/rayli1c33dc5da8b9b/p/lib" "C:/Users/User/.conan2/p/b/glfw3fec481d91d5e/p/lib")
-list(PREPEND CMAKE_INCLUDE_PATH "C:/Users/User/.conan2/p/b/rayli1c33dc5da8b9b/p/include" "C:/Users/User/.conan2/p/b/glfw3fec481d91d5e/p/include")
-set(CONAN_RUNTIME_LIB_DIRS "C:/Users/User/.conan2/p/b/rayli1c33dc5da8b9b/p/bin" "C:/Users/User/.conan2/p/b/glfw3fec481d91d5e/p/bin" )
+list(PREPEND CMAKE_LIBRARY_PATH "/home/discente/.conan2/p/b/rayliad778705029fe/p/lib" "/home/discente/.conan2/p/b/glfw826206840f184/p/lib")
+list(PREPEND CMAKE_INCLUDE_PATH "/home/discente/.conan2/p/b/rayliad778705029fe/p/include" "/home/discente/.conan2/p/b/glfw826206840f184/p/include")
+set(CONAN_RUNTIME_LIB_DIRS "/home/discente/.conan2/p/b/rayliad778705029fe/p/lib" "/home/discente/.conan2/p/b/glfw826206840f184/p/lib" )
 
 endif()
 
@@ -159,9 +159,9 @@ endif()
 # Define pkg-config from 'tools.gnu:pkg_config' executable and paths
 
 if (DEFINED ENV{PKG_CONFIG_PATH})
-set(ENV{PKG_CONFIG_PATH} "${CMAKE_CURRENT_LIST_DIR};$ENV{PKG_CONFIG_PATH}")
+set(ENV{PKG_CONFIG_PATH} "${CMAKE_CURRENT_LIST_DIR}:$ENV{PKG_CONFIG_PATH}")
 else()
-set(ENV{PKG_CONFIG_PATH} "${CMAKE_CURRENT_LIST_DIR};")
+set(ENV{PKG_CONFIG_PATH} "${CMAKE_CURRENT_LIST_DIR}:")
 endif()
 
 

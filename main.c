@@ -3,7 +3,7 @@
 #define INVENTARIO_COLUNAS 4
 #define INVENTARIO_LINHAS 4
 #define INVENTARIO_SLOTS 16
-
+#define MAX_ITEM_ID 100
 #define SLOT_SIZE 100
 #define SLOT_ESPACO 15
 
@@ -42,6 +42,26 @@ int main()
         .frameWidth = 64,
         .frameHeight = 128
     };
+
+
+Texture2D itemTextures[MAX_ITEM_ID + 1] = {0};
+
+for (int id = 1; id <= MAX_ITEM_ID; id++)
+{
+    char endereco[128];
+
+    snprintf(
+        endereco,
+        sizeof(endereco),
+        "../images/%d.png",
+        id
+    );
+
+    if (FileExists(endereco))
+    {
+        itemTextures[id] = LoadTexture(endereco);
+    }
+}
     Texture2D enemyTex = LoadTexture("../images/enemy.png");
 
     Texture2D wallTex = LoadTexture("../images/wall.png");
@@ -103,7 +123,7 @@ int main()
                     DrawText("> FECHAR <", windowW / 2 - MeasureText("> FECHAR <", 24) / 2, 380, 24, RAYWHITE);
                 }
 
-                const char* footer = "Navegue com W/S ou Setas e selecione com Enter";
+                const char* footer = "Navegue com W/S ou Setas e selecione com Enter; \nComandos: W/S: Anda pra frente e pra trás; A/D: Rotaciona a câmera; E: Abre o inventário";
                 int footerWidth = MeasureText(footer, 14);
                 DrawText(footer, windowW / 2 - footerWidth / 2, 520, 14, DARKGRAY);
                 break;
@@ -160,50 +180,149 @@ int main()
         break;
         }
 
-        case INVENTARIO: {
-            ClearBackground(BLACK);
+        
+        case INVENTARIO:
+{
 
-            if (IsKeyPressed(KEY_E)) {
-                    estadoAtual = JOGANDO;
-                }
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+{
+    Vector2 mouse = GetMousePosition();
 
-            int inicioX = 100;
-            int inicioY = 100;
-            Color rectangleColor = (Color){55, 55, 55, 255};
-            Vector2 mouse = GetMousePosition();
+    Node *item = inventory->next;
 
-            for (int linha = 0; linha < INVENTARIO_LINHAS; linha++)
+    for (int i = 0; i < 16 && item != NULL; i++)
+    {
+        int x = 100 + (i % 4) * (100 + 15);
+        int y = 100 + (i / 4) * (100 + 15);
+
+        Rectangle slot = {
+            (float)x,
+            (float)y,
+            100.0f,
+            100.0f
+        };
+
+        if (CheckCollisionPointRec(mouse, slot))
+        {
+            if (sprint_stamina < 100.0f && sprint_stamina > 0 && item->data > 0)
             {
-                for (int coluna = 0; coluna < INVENTARIO_COLUNAS; coluna++)
+                // Recupera 50 de stamina, sem ultrapassar 100
+                sprint_stamina += 50.0f;
+                sprint = sprint_stamina;
+
+                if (sprint_stamina > 100.0f)
+                    sprint_stamina = 100.0f;
+                    sprint = sprint_stamina;
+
+                // Consome uma unidade do item
+                item->data--;
+
+                // Remove o item se a quantidade chegar a zero
+                if (item->data == 0)
+                    remover(inventory, i);
+
+            }
+
+            break;
+        }
+
+        item = item->next;
+    }
+}
+    ClearBackground(BLACK);
+
+    if (IsKeyPressed(KEY_E))
+    {
+        estadoAtual = JOGANDO;
+    }
+
+    int inicioX = 100;
+    int inicioY = 100;
+    int pos = 0;
+
+    Vector2 mouse = GetMousePosition();
+
+    for (int linha = 0; linha < INVENTARIO_LINHAS; linha++)
+    {
+        for (int coluna = 0; coluna < INVENTARIO_COLUNAS; coluna++)
+        {
+            int x = inicioX + coluna * (SLOT_SIZE + SLOT_ESPACO);
+            int y = inicioY + linha * (SLOT_SIZE + SLOT_ESPACO);
+
+            Rectangle slot = {
+                (float)x,
+                (float)y,
+                SLOT_SIZE,
+                SLOT_SIZE
+            };
+
+            Color corSlot = CheckCollisionPointRec(mouse, slot)
+                ? (Color){100, 100, 100, 255}
+                : (Color){45, 45, 45, 255};
+
+            DrawRectangleRec(slot, corSlot);
+            DrawRectangleLinesEx(slot, 2, WHITE);
+
+            Node *no = pegar_elemento_lista(inventory, pos);
+
+            if (no != NULL)
+            {
+                int id = no->item_id;
+
+                if (id >= 0 && id <= MAX_ITEM_ID &&
+                    itemTextures[id].id != 0)
                 {
-                    int x = inicioX + coluna * (SLOT_SIZE + SLOT_ESPACO);
-                    int y = inicioY + linha * (SLOT_SIZE + SLOT_ESPACO);
-                    if (mouse.x >= x && mouse.x <= x+SLOT_SIZE && mouse.y >= y && mouse.y <= y+SLOT_SIZE){
-                        rectangleColor = (Color){155, 155, 155, 255};
-                    }
-                    else{
-                        rectangleColor = (Color){55, 55, 55, 255};
-                    }
+                    Texture2D item = itemTextures[id];
 
-                    DrawRectangle(
-                        x,
-                        y,
-                        SLOT_SIZE,
-                        SLOT_SIZE,
-                        rectangleColor
-                    );
+                    Rectangle origem = {
+                        0,
+                        0,
+                        (float)item.width,
+                        (float)item.height
+                    };
 
-                    DrawRectangleLines(
-                        x,
-                        y,
-                        SLOT_SIZE,
-                        SLOT_SIZE,
+                    Rectangle destino = {
+                        x + 10.0f,
+                        y + 10.0f,
+                        SLOT_SIZE - 20.0f,
+                        SLOT_SIZE - 20.0f
+                    };
+
+                    DrawTexturePro(
+                        item,
+                        origem,
+                        destino,
+                        (Vector2){0, 0},
+                        0.0f,
                         WHITE
                     );
                 }
+
+                // Exibe a quantidade do item no canto inferior direito.
+                char quantidade[16];
+
+                snprintf(
+                    quantidade,
+                    sizeof(quantidade),
+                    "%d",
+                    no->data
+                );
+
+                DrawText(
+                    quantidade,
+                    x + SLOT_SIZE - MeasureText(quantidade, 20) - 5,
+                    y + SLOT_SIZE - 25,
+                    20,
+                    WHITE
+                );
             }
 
+            pos++;
         }
+    }
+
+    break;
+}
     }
 
         EndDrawing();

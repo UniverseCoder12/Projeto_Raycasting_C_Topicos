@@ -443,11 +443,14 @@ bool remover(Node *cabecalho, int id) {
     Node *anterior = cabecalho;
     Node *atual = cabecalho->next;
     Node *proximo = cabecalho->next->next;
+    int i = 0;
 
-    while (atual != NULL && atual->item_id != id) {
+    while (atual != NULL && i < id)
+    {
         anterior = atual;
         atual = atual->next;
         proximo = atual->next;
+        i++;
     }
 
     if (atual == NULL) {
@@ -464,18 +467,22 @@ bool remover(Node *cabecalho, int id) {
 }
 
 
-void exibir_lista(Node *cabecalho) {
-    if (cabecalho == NULL) return;
+Node *pegar_elemento_lista(Node *cabecalho, int pos)
+{
+    if (cabecalho == NULL || pos < 0)
+        return NULL;
 
     Node *atual = cabecalho->next;
-    printf("NULL <- Cabeçalho -> ");
-    while (atual != NULL) {
-        printf("<- [%d] -> ", atual->data);
-        atual = atual->next;
-    }
-    printf("NULL\n");
-}
+    int i = 0;
 
+    while (atual != NULL && i < pos)
+    {
+        atual = atual->next;
+        i++;
+    }
+
+    return atual;
+}
 
 void destruir_lista(Node *cabecalho) {
     if (cabecalho == NULL) return;
@@ -486,4 +493,27 @@ void destruir_lista(Node *cabecalho) {
         free(atual);
         atual = proximo;
     }
+}
+
+bool consumir_item(Node *cabecalho, int pos)
+{
+    Node *item = pegar_elemento_lista(cabecalho, pos);
+
+    if (item == NULL)
+        return false;
+
+    // Verifica se existe quantidade disponível
+    if (item->data <= 0)
+        return false;
+
+    // Consome uma unidade
+    item->data--;
+
+    // Remove o item da lista se a quantidade chegar a zero
+    if (item->data == 0)
+    {
+        remover(cabecalho, pos);
+    }
+
+    return true;
 }

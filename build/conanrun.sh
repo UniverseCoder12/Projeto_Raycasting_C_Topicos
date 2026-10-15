@@ -1,0 +1,1 @@
+. "/home/discente/Downloads/projeto/git/Projeto_Raycasting_C_Topicos/build/conanrunenv-release-x86_64.sh"

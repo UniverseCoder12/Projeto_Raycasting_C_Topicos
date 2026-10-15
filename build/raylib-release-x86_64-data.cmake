@@ -13,7 +13,7 @@ set(opengl_system_FIND_MODE "NO_MODULE")
 
 ########### VARIABLES #######################################################################
 #############################################################################################
-set(raylib_PACKAGE_FOLDER_RELEASE "C:/Users/User/.conan2/p/b/rayli1c33dc5da8b9b/p")
+set(raylib_PACKAGE_FOLDER_RELEASE "/home/discente/.conan2/p/b/rayliad778705029fe/p")
 set(raylib_BUILD_MODULES_PATHS_RELEASE )
 
 
@@ -29,9 +29,9 @@ set(raylib_COMPILE_OPTIONS_CXX_RELEASE )
 set(raylib_LIB_DIRS_RELEASE "${raylib_PACKAGE_FOLDER_RELEASE}/lib")
 set(raylib_BIN_DIRS_RELEASE )
 set(raylib_LIBRARY_TYPE_RELEASE STATIC)
-set(raylib_IS_HOST_WINDOWS_RELEASE 1)
+set(raylib_IS_HOST_WINDOWS_RELEASE 0)
 set(raylib_LIBS_RELEASE raylib)
-set(raylib_SYSTEM_LIBS_RELEASE winmm)
+set(raylib_SYSTEM_LIBS_RELEASE m pthread)
 set(raylib_FRAMEWORK_DIRS_RELEASE )
 set(raylib_FRAMEWORKS_RELEASE )
 set(raylib_BUILD_DIRS_RELEASE )

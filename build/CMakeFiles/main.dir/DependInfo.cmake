@@ -8,7 +8,8 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "C:/Users/User/Documents/Git_repositorios/IF-2026/Projetos/Jogo_raycasting_C/Projeto_Raycasting_C_Topicos/main.c" "CMakeFiles/main.dir/main.c.obj" "gcc" "CMakeFiles/main.dir/main.c.obj.d"
+  "/home/discente/Downloads/projeto/git/Projeto_Raycasting_C_Topicos/main.c" "CMakeFiles/main.dir/main.c.o" "gcc" "CMakeFiles/main.dir/main.c.o.d"
+  "" "main" "gcc" "CMakeFiles/main.dir/link.d"
   )
 
 # Targets to which this target links which contain Fortran sources.
