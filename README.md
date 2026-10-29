@@ -30,14 +30,13 @@ Modificações:
 Salve o arquivo, e no terminal na pasta build rode o comando "cmake --build ." e depois rode o código com o comando "./main".
 
 # Coisas a Fazer:
--Patrulha do Inimigo
--"Visão" do Inimigo
--Troca de Modo do inimigo
--Itens no mapa
--Itens Chave
--Porta de saída
--Game over + Jump Scare
--Efeitos Sonoros
--Tela de Titulo
--Titulo Melhor
--
+-- Patrulha do Inimigo
+-- "Visão" do Inimigo
+-- Troca de Modo do inimigo
+-- Itens no mapa
+-- Itens Chave
+-- Porta de saída
+-- Game over + Jump Scare
+-- Efeitos Sonoros
+-- Tela de Titulo
+-- Titulo Melhor
