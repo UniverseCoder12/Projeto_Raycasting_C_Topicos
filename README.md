@@ -40,3 +40,4 @@ Salve o arquivo, e no terminal na pasta build rode o comando "cmake --build ." e
 -Efeitos Sonoros
 -Tela de Titulo
 -Titulo Melhor
+-
