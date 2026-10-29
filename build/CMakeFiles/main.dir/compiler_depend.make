@@ -9,6 +9,8 @@ CMakeFiles/main.dir/main.c.o: /home/discente/Downloads/projeto/git/Projeto_Rayca
   /usr/include/endian.h \
   /usr/include/features-time64.h \
   /usr/include/features.h \
+  /usr/include/limits.h \
+  /usr/include/linux/limits.h \
   /usr/include/math.h \
   /usr/include/stdc-predef.h \
   /usr/include/stdio.h \
@@ -25,12 +27,17 @@ CMakeFiles/main.dir/main.c.o: /home/discente/Downloads/projeto/git/Projeto_Rayca
   /usr/include/x86_64-linux-gnu/bits/iscanonical.h \
   /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
   /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
+  /usr/include/x86_64-linux-gnu/bits/local_lim.h \
   /usr/include/x86_64-linux-gnu/bits/long-double.h \
   /usr/include/x86_64-linux-gnu/bits/math-vector.h \
   /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
   /usr/include/x86_64-linux-gnu/bits/mathcalls-macros.h \
   /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h \
   /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
+  /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h \
+  /usr/include/x86_64-linux-gnu/bits/pthread_stack_min.h \
   /usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h \
   /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h \
   /usr/include/x86_64-linux-gnu/bits/select-decl.h \
@@ -76,9 +83,11 @@ CMakeFiles/main.dir/main.c.o: /home/discente/Downloads/projeto/git/Projeto_Rayca
   /usr/include/x86_64-linux-gnu/sys/cdefs.h \
   /usr/include/x86_64-linux-gnu/sys/select.h \
   /usr/include/x86_64-linux-gnu/sys/types.h \
+  /usr/lib/gcc/x86_64-linux-gnu/15/include/limits.h \
   /usr/lib/gcc/x86_64-linux-gnu/15/include/stdarg.h \
   /usr/lib/gcc/x86_64-linux-gnu/15/include/stdbool.h \
-  /usr/lib/gcc/x86_64-linux-gnu/15/include/stddef.h
+  /usr/lib/gcc/x86_64-linux-gnu/15/include/stddef.h \
+  /usr/lib/gcc/x86_64-linux-gnu/15/include/syslimits.h
 
 main: /home/discente/.conan2/p/b/glfw826206840f184/p/lib/libglfw3.a \
   /home/discente/.conan2/p/b/rayliad778705029fe/p/lib/libraylib.a \
@@ -180,13 +189,13 @@ main: /home/discente/.conan2/p/b/glfw826206840f184/p/lib/libglfw3.a \
 
 /usr/lib/x86_64-linux-gnu/libxcb-res.so:
 
-/usr/include/x86_64-linux-gnu/bits/types/__sigset_t.h:
+/usr/lib/x86_64-linux-gnu/libxcb-image.so:
 
-/usr/include/x86_64-linux-gnu/bits/mathcalls-macros.h:
+/usr/lib/x86_64-linux-gnu/libxcb-icccm.so:
 
-/usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h:
+/usr/lib/x86_64-linux-gnu/libxcb-glx.so:
 
-/usr/lib/x86_64-linux-gnu/libm.so:
+/usr/lib/x86_64-linux-gnu/libxcb-dri2.so:
 
 /usr/include/x86_64-linux-gnu/bits/types/__FILE.h:
 
@@ -202,8 +211,6 @@ main: /home/discente/.conan2/p/b/glfw826206840f184/p/lib/libglfw3.a \
 
 /usr/include/x86_64-linux-gnu/gnu/stubs-64.h:
 
-/usr/lib/x86_64-linux-gnu/libxcb-dri2.so:
-
 /usr/include/x86_64-linux-gnu/bits/struct_mutex.h:
 
 /usr/include/x86_64-linux-gnu/bits/mathcalls.h:
@@ -212,17 +219,31 @@ main: /home/discente/.conan2/p/b/glfw826206840f184/p/lib/libglfw3.a \
 
 /usr/include/x86_64-linux-gnu/bits/stdlib-bsearch.h:
 
+/usr/lib/x86_64-linux-gnu/libxcb-keysyms.so:
+
+/usr/include/stdc-predef.h:
+
+/usr/include/x86_64-linux-gnu/bits/pthread_stack_min.h:
+
 /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h:
 
 /usr/lib/x86_64-linux-gnu/libXrender.so:
 
 /usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h:
 
+/usr/lib/x86_64-linux-gnu/libxcb-dri3.so:
+
+/home/discente/Downloads/projeto/git/Projeto_Raycasting_C_Topicos/main.c:
+
+/usr/lib/x86_64-linux-gnu/libXi.so:
+
 /usr/include/x86_64-linux-gnu/bits/stdio2.h:
 
 CMakeFiles/main.dir/main.c.o:
 
 /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h:
+
+/usr/include/limits.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/15/include/stdarg.h:
 
@@ -234,61 +255,53 @@ CMakeFiles/main.dir/main.c.o:
 
 /usr/include/x86_64-linux-gnu/bits/types/FILE.h:
 
+/usr/lib/x86_64-linux-gnu/libxcb-composite.so:
+
+/usr/lib/x86_64-linux-gnu/libXcursor.so:
+
 /usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h:
 
 /usr/lib/x86_64-linux-gnu/libXmuu.so:
+
+/usr/include/x86_64-linux-gnu/bits/select-decl.h:
 
 /usr/include/x86_64-linux-gnu/bits/select.h:
 
 /usr/lib/x86_64-linux-gnu/libXRes.so:
 
-/usr/include/x86_64-linux-gnu/bits/select-decl.h:
-
-/usr/lib/x86_64-linux-gnu/libxcb-randr.so:
-
-/usr/include/x86_64-linux-gnu/bits/libc-header-start.h:
-
-/usr/include/stdlib.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/once_flag.h:
-
-/usr/lib/x86_64-linux-gnu/libxcb-present.so:
-
-/usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h:
-
-/usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h:
-
-/home/discente/.conan2/p/b/rayliad778705029fe/p/include/raylib.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/time_t.h:
-
-/lib64/ld-linux-x86-64.so.2:
-
-/usr/lib/x86_64-linux-gnu/libICE.so:
-
-/usr/lib/x86_64-linux-gnu/librt.a:
+/usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h:
 
 /usr/include/features-time64.h:
+
+/usr/include/x86_64-linux-gnu/bits/posix1_lim.h:
+
+/usr/lib/x86_64-linux-gnu/libGL.so:
+
+/usr/include/x86_64-linux-gnu/bits/mathcalls-macros.h:
+
+/usr/lib/x86_64-linux-gnu/libxcb-cursor.so:
+
+/usr/include/x86_64-linux-gnu/bits/long-double.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/__sigset_t.h:
 
 /home/discente/Downloads/projeto/git/Projeto_Raycasting_C_Topicos/metodos.h:
 
 /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h:
 
-/usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h:
+/usr/lib/x86_64-linux-gnu/libxcb-randr.so:
 
-/usr/include/x86_64-linux-gnu/bits/types.h:
+/usr/include/x86_64-linux-gnu/bits/libc-header-start.h:
 
-/usr/include/x86_64-linux-gnu/bits/stdint-intn.h:
+/usr/include/linux/limits.h:
 
-/usr/lib/x86_64-linux-gnu/libX11-xcb.so:
+/usr/include/x86_64-linux-gnu/bits/posix2_lim.h:
 
-/usr/include/x86_64-linux-gnu/bits/time64.h:
+/usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h:
 
-/usr/include/x86_64-linux-gnu/bits/types/sigset_t.h:
+/usr/lib/x86_64-linux-gnu/libXfixes.so:
 
-/usr/include/alloca.h:
-
-/usr/lib/x86_64-linux-gnu/libpthread.a:
+/usr/lib/x86_64-linux-gnu/libgcc_s.so.1:
 
 /usr/include/features.h:
 
@@ -304,15 +317,23 @@ CMakeFiles/main.dir/main.c.o:
 
 /usr/include/x86_64-linux-gnu/bits/floatn-common.h:
 
-/usr/include/x86_64-linux-gnu/bits/types/clockid_t.h:
-
 /home/discente/Downloads/projeto/git/Projeto_Raycasting_C_Topicos/metodos.c:
 
-/usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h:
+/usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h:
 
-/usr/lib/x86_64-linux-gnu/libXfixes.so:
+/home/discente/.conan2/p/b/rayliad778705029fe/p/include/raylib.h:
 
-/usr/lib/x86_64-linux-gnu/libgcc_s.so.1:
+/usr/include/x86_64-linux-gnu/bits/types/time_t.h:
+
+/lib64/ld-linux-x86-64.so.2:
+
+/usr/lib/x86_64-linux-gnu/libICE.so:
+
+/usr/lib/x86_64-linux-gnu/librt.a:
+
+/usr/include/x86_64-linux-gnu/bits/types/clockid_t.h:
+
+/usr/include/stdlib.h:
 
 /usr/include/endian.h:
 
@@ -323,10 +344,6 @@ CMakeFiles/main.dir/main.c.o:
 /usr/include/x86_64-linux-gnu/bits/endianness.h:
 
 /usr/include/x86_64-linux-gnu/bits/floatn.h:
-
-/usr/lib/x86_64-linux-gnu/libXcursor.so:
-
-/usr/lib/x86_64-linux-gnu/libxcb-composite.so:
 
 /usr/lib/x86_64-linux-gnu/libfontenc.so:
 
@@ -342,7 +359,35 @@ CMakeFiles/main.dir/main.c.o:
 
 /usr/include/x86_64-linux-gnu/bits/fp-fast.h:
 
+/usr/include/x86_64-linux-gnu/bits/time64.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/sigset_t.h:
+
+/usr/include/alloca.h:
+
+/usr/lib/x86_64-linux-gnu/libpthread.a:
+
+/usr/lib/x86_64-linux-gnu/libxcb-present.so:
+
+/usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h:
+
+/usr/include/x86_64-linux-gnu/bits/local_lim.h:
+
 /usr/include/x86_64-linux-gnu/bits/math-vector.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h:
+
+/usr/include/x86_64-linux-gnu/bits/types.h:
+
+/usr/include/x86_64-linux-gnu/bits/stdint-intn.h:
+
+/usr/lib/x86_64-linux-gnu/libX11-xcb.so:
+
+/usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h:
+
+/usr/lib/x86_64-linux-gnu/libm.so:
+
+/usr/include/x86_64-linux-gnu/bits/types/once_flag.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h:
 
@@ -374,6 +419,12 @@ CMakeFiles/main.dir/main.c.o:
 
 /usr/include/x86_64-linux-gnu/sys/types.h:
 
+/usr/lib/gcc/x86_64-linux-gnu/15/include/limits.h:
+
+/usr/lib/x86_64-linux-gnu/Scrt1.o:
+
+/usr/lib/x86_64-linux-gnu/libSM.so:
+
 /usr/include/x86_64-linux-gnu/bits/select2.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/15/include/stdbool.h:
@@ -383,12 +434,6 @@ CMakeFiles/main.dir/main.c.o:
 /usr/include/x86_64-linux-gnu/bits/byteswap.h:
 
 /home/discente/.conan2/p/b/rayliad778705029fe/p/lib/libraylib.a:
-
-/usr/lib/x86_64-linux-gnu/Scrt1.o:
-
-/usr/lib/x86_64-linux-gnu/libSM.so:
-
-/usr/lib/x86_64-linux-gnu/libGL.so:
 
 /usr/lib/x86_64-linux-gnu/libxkbfile.so:
 
@@ -430,26 +475,8 @@ CMakeFiles/main.dir/main.c.o:
 
 /usr/lib/x86_64-linux-gnu/libc.so:
 
+/usr/lib/gcc/x86_64-linux-gnu/15/include/syslimits.h:
+
 /usr/lib/x86_64-linux-gnu/libdl.a:
 
 /usr/lib/x86_64-linux-gnu/libuuid.so:
-
-/usr/include/stdc-predef.h:
-
-/usr/lib/x86_64-linux-gnu/libxcb-keysyms.so:
-
-/usr/include/x86_64-linux-gnu/bits/long-double.h:
-
-/usr/lib/x86_64-linux-gnu/libxcb-cursor.so:
-
-/usr/lib/x86_64-linux-gnu/libxcb-image.so:
-
-/home/discente/Downloads/projeto/git/Projeto_Raycasting_C_Topicos/main.c:
-
-/usr/lib/x86_64-linux-gnu/libXi.so:
-
-/usr/lib/x86_64-linux-gnu/libxcb-dri3.so:
-
-/usr/lib/x86_64-linux-gnu/libxcb-glx.so:
-
-/usr/lib/x86_64-linux-gnu/libxcb-icccm.so:

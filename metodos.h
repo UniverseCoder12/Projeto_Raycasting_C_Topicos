@@ -26,3 +26,4 @@ void drawFloorAndCeiling(Vector2 playerPos,float angle,Color*floorPixels,Color*c
 bool checkCollisionCircleMap(Vector2 pos,float radius,int mapa[MAP_H][MAP_W]);
 void playerMovement(Vector2*playerPos,float*angle,float radius,int mapa[MAP_H][MAP_W],float*sprint,float*sprint_stamina);
 bool consumir_item(Node *cabecalho, int pos);
+void enemyWalk(Enemy **enemy, Vector2 *playerPos, int mapa[MAP_H][MAP_W]);

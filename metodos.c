@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include "metodos.h"
 #include <math.h>
+#include <limits.h>
 #include <stdio.h>
 #define MAP_W 20
 #define MAP_H 20
@@ -9,6 +10,8 @@
 #define TILE 64
 #define FoV (PI/3)
 #define NUM_RAYS 640
+
+#include <stdio.h>
 
 void loadMap(int mapa[MAP_H][MAP_W])
 {
@@ -25,6 +28,240 @@ void loadMap(int mapa[MAP_H][MAP_W])
     }
 
     fclose(f);
+}
+
+void enemyWalk(
+    Enemy **enemy,
+    Vector2 *playerPos,
+    int mapa[MAP_H][MAP_W]
+)
+{
+    if (enemy == NULL || *enemy == NULL || playerPos == NULL)
+        return;
+
+    // Posição REAL do centro do inimigo no mapa.
+    // Não subtraia frameWidth / 2.
+    int ex = (int)floorf((*enemy)->pos.x / TILE);
+    int ey = (int)floorf((*enemy)->pos.y / TILE);
+
+    int px = (int)floorf(playerPos->x / TILE);
+    int py = (int)floorf(playerPos->y / TILE);
+
+    // Verifica os limites do mapa
+    if (ex < 0 || ex >= MAP_W ||
+        ey < 0 || ey >= MAP_H ||
+        px < 0 || px >= MAP_W ||
+        py < 0 || py >= MAP_H)
+        return;
+
+    // O inimigo e o jogador devem estar em células livres
+    if (mapa[ey][ex] != 0 || mapa[py][px] != 0)
+        return;
+
+    // Distância mínima em número de células
+    int dist[MAP_H][MAP_W];
+
+    // Fila da busca BFS
+    int filaX[MAP_W * MAP_H];
+    int filaY[MAP_W * MAP_H];
+
+    for (int y = 0; y < MAP_H; y++)
+    {
+        for (int x = 0; x < MAP_W; x++)
+        {
+            dist[y][x] = -1;
+        }
+    }
+
+    int inicio = 0;
+    int fim = 0;
+
+    // Começa a busca na posição do jogador
+    filaX[fim] = px;
+    filaY[fim] = py;
+    fim++;
+
+    dist[py][px] = 0;
+
+    // Movimentos: direita, esquerda, baixo e cima
+    int dirX[4] = { 1, -1, 0, 0 };
+    int dirY[4] = { 0, 0, 1, -1 };
+
+    // BFS: encontra as distâncias pelo caminho livre
+    while (inicio < fim)
+    {
+        int x = filaX[inicio];
+        int y = filaY[inicio];
+        inicio++;
+
+        for (int i = 0; i < 4; i++)
+        {
+            int nx = x + dirX[i];
+            int ny = y + dirY[i];
+
+            if (nx < 0 || nx >= MAP_W ||
+                ny < 0 || ny >= MAP_H)
+                continue;
+
+            if (mapa[ny][nx] != 0)
+                continue;
+
+            if (dist[ny][nx] != -1)
+                continue;
+
+            dist[ny][nx] = dist[y][x] + 1;
+
+            filaX[fim] = nx;
+            filaY[fim] = ny;
+            fim++;
+        }
+    }
+
+    // Se não existe caminho até o jogador, não se move
+    if (dist[ey][ex] <= 0)
+        return;
+
+    // Encontra o próximo bloco do menor caminho
+    int proximoX = ex;
+    int proximoY = ey;
+
+    for (int i = 0; i < 4; i++)
+    {
+        int nx = ex + dirX[i];
+        int ny = ey + dirY[i];
+
+        if (nx < 0 || nx >= MAP_W ||
+            ny < 0 || ny >= MAP_H)
+            continue;
+
+        if (dist[ny][nx] == dist[ey][ex] - 1)
+        {
+            proximoX = nx;
+            proximoY = ny;
+            break;
+        }
+    }
+
+    // Se não encontrou um próximo bloco, para
+    if (proximoX == ex && proximoY == ey)
+        return;
+
+    float velocidade = 1.8f;
+    float raioInimigo = TILE / 4.0f;
+
+
+Vector2 centroAtual = {
+    (ex + 0.5f) * TILE,
+    (ey + 0.5f) * TILE
+};
+
+Vector2 centroProximo = {
+    (proximoX + 0.5f) * TILE,
+    (proximoY + 0.5f) * TILE
+};
+
+Vector2 *pos = &(*enemy)->pos;
+
+// Caminho horizontal
+if (proximoX != ex)
+{
+    // Primeiro, alinhar o inimigo ao centro vertical do corredor
+    float erroY = centroAtual.y - pos->y;
+
+    if (fabsf(erroY) > 0.5f)
+    {
+        float passoY;
+
+        if (fabsf(erroY) < velocidade)
+            passoY = erroY;
+        else
+            passoY = (erroY > 0) ? velocidade : -velocidade;
+
+        Vector2 tentativa = *pos;
+        tentativa.y += passoY;
+
+        if (!checkCollisionCircleMap(
+                tentativa, raioInimigo, mapa))
+        {
+            pos->y = tentativa.y;
+        }
+
+        return;
+    }
+
+    // Corrige pequenos erros de alinhamento
+    pos->y = centroAtual.y;
+
+    // Continua avançando até o centro do próximo bloco
+    float erroX = centroProximo.x - pos->x;
+
+    float passoX;
+
+    if (fabsf(erroX) < velocidade)
+        passoX = erroX;
+    else
+        passoX = (erroX > 0) ? velocidade : -velocidade;
+
+    Vector2 tentativa = *pos;
+    tentativa.x += passoX;
+
+    if (!checkCollisionCircleMap(
+            tentativa, raioInimigo, mapa))
+    {
+        pos->x = tentativa.x;
+    }
+}
+
+// Caminho vertical
+else if (proximoY != ey)
+{
+    // Primeiro, alinhar o inimigo ao centro horizontal do corredor
+    float erroX = centroAtual.x - pos->x;
+
+    if (fabsf(erroX) > 0.5f)
+    {
+        float passoX;
+
+        if (fabsf(erroX) < velocidade)
+            passoX = erroX;
+        else
+            passoX = (erroX > 0) ? velocidade : -velocidade;
+
+        Vector2 tentativa = *pos;
+        tentativa.x += passoX;
+
+        if (!checkCollisionCircleMap(
+                tentativa, raioInimigo, mapa))
+        {
+            pos->x = tentativa.x;
+        }
+
+        return;
+    }
+
+    // Corrige pequenos erros de alinhamento
+    pos->x = centroAtual.x;
+
+    // Continua avançando até o centro do próximo bloco
+    float erroY = centroProximo.y - pos->y;
+
+    float passoY;
+
+    if (fabsf(erroY) < velocidade)
+        passoY = erroY;
+    else
+        passoY = (erroY > 0) ? velocidade : -velocidade;
+
+    Vector2 tentativa = *pos;
+    tentativa.y += passoY;
+
+    if (!checkCollisionCircleMap(
+            tentativa, raioInimigo, mapa))
+    {
+        pos->y = tentativa.y;
+    }
+}
+
 }
 
 void drawEnemy(Vector2 playerPos,float angle,Enemy enemy,Texture2D enemyTex,float zBuffer[])
@@ -303,23 +540,49 @@ void drawFloorAndCeiling(Vector2 playerPos,float angle,Color*floorPixels,Color*c
     UpdateTexture(screenTex,screenBuffer.data);
     DrawTexture(screenTex,0,0,WHITE);
 }
-bool checkCollisionCircleMap(Vector2 pos,float radius,int mapa[MAP_H][MAP_W]) {
-    int left = (pos.x-radius)/TILE;
-    int right = (pos.x+radius)/TILE;
-    int top = (pos.y-radius)/TILE;
-    int bottom = (pos.y+radius)/TILE;
 
-    for(int y = top; y <= bottom; y++) {
-        for(int x = left; x <= right; x++) {
-            if(mapa[y][x] == 1) {
-                Rectangle wall = {
-                    x*TILE,
-                    y*TILE,
-                    TILE,
-                    TILE
+bool checkCollisionCircleMap(
+    Vector2 pos,
+    float radius,
+    int mapa[MAP_H][MAP_W]
+)
+{
+    // Impede que o círculo saia dos limites do mundo
+    if (pos.x - radius < 0 ||
+        pos.y - radius < 0 ||
+        pos.x + radius >= MAP_W * TILE ||
+        pos.y + radius >= MAP_H * TILE)
+    {
+        return true;
+    }
+
+    int left = (int)floorf((pos.x - radius) / TILE);
+    int right = (int)floorf((pos.x + radius) / TILE);
+    int top = (int)floorf((pos.y - radius) / TILE);
+    int bottom = (int)floorf((pos.y + radius) / TILE);
+
+    for (int y = top; y <= bottom; y++)
+    {
+        for (int x = left; x <= right; x++)
+        {
+            // Proteção contra índices inválidos
+            if (x < 0 || x >= MAP_W ||
+                y < 0 || y >= MAP_H)
+            {
+                return true;
+            }
+
+            if (mapa[y][x] == 1)
+            {
+                Rectangle parede = {
+                    (float)(x * TILE),
+                    (float)(y * TILE),
+                    (float)TILE,
+                    (float)TILE
                 };
 
-                if(CheckCollisionCircleRec(pos,radius,wall)) {
+                if (CheckCollisionCircleRec(pos, radius, parede))
+                {
                     return true;
                 }
             }
@@ -328,6 +591,7 @@ bool checkCollisionCircleMap(Vector2 pos,float radius,int mapa[MAP_H][MAP_W]) {
 
     return false;
 }
+
 void playerMovement(Vector2*playerPos,float*angle,float radius,int mapa[MAP_H][MAP_W],float*sprint,float*sprint_stamina) {
     float speed=1.5f;
 

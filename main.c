@@ -146,6 +146,10 @@ for (int id = 1; id <= MAX_ITEM_ID; id++)
 
         playerMovement(&player,&angle,playerray,mapa,&sprint,&sprint_stamina);
 
+        Enemy *enemy1 = &enemy;
+
+        enemyWalk(&enemy1, &player, mapa);
+
         ClearBackground(BLACK);
 
         drawFloorAndCeiling(player, angle, floorPixels, ceilPixels, floorTex, ceilTex, screenBuffer, screenTex);
