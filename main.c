@@ -40,7 +40,12 @@ int main()
         .frame = 0,
         .frameCount = 11,
         .frameWidth = 64,
-        .frameHeight = 128
+        .frameHeight = 128,
+        .state = ENEMY_CHASE,
+        // Waypoints em CÉLULAS do mapa (x, y). Precisam ser células livres (0).
+        .waypoints = {{2, 2},{5, 2},{9, 2},{13, 2},{18, 2},{18, 5},{16, 5},{10, 5},{6, 5},{2, 5},{2, 8},{6, 8},{10, 8},{14, 8},{18, 8},{19, 10},{18, 11},{14, 11},{10, 11},{8, 11},{2, 11},{2, 15},{6, 15},{10, 15},{14, 15},{18, 15},{18, 18},{14, 18},{10, 18},{5, 18}},
+        .waypointCount = 5,
+        .waypointAtual = 0
     };
 
 
@@ -146,9 +151,7 @@ for (int id = 1; id <= MAX_ITEM_ID; id++)
 
         playerMovement(&player,&angle,playerray,mapa,&sprint,&sprint_stamina);
 
-        Enemy *enemy1 = &enemy;
-
-        enemyWalk(&enemy1, &player, mapa);
+        enemyUpdate(&enemy, player, mapa);
 
         ClearBackground(BLACK);
 

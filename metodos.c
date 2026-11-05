@@ -30,64 +30,99 @@ void loadMap(int mapa[MAP_H][MAP_W])
     fclose(f);
 }
 
-void enemyWalk(
-    Enemy **enemy,
-    Vector2 *playerPos,
+// ---------------------------------------------------------------------------
+// IA do inimigo
+// ---------------------------------------------------------------------------
+
+#define PATROL_SPEED 1.2f        // pixels por frame durante a patrulha
+#define CHASE_SPEED 1.8f         // pixels por frame durante a perseguição
+#define PATROL_WAIT_FRAMES 90    // pausa em cada waypoint (~1,5 s a 60 FPS)
+
+typedef enum MoveResult {
+    MOVE_BLOCKED = -1,   // origem/destino inválidos ou sem caminho
+    MOVE_EN_ROUTE = 0,   // deu um passo, ainda não chegou
+    MOVE_ARRIVED = 1     // está no centro da célula de destino
+} MoveResult;
+
+// Anda de "atual" até "alvo" no máximo "passo" pixels, sem ultrapassar o alvo.
+static float stepToward(float atual, float alvo, float passo)
+{
+    float erro = alvo - atual;
+
+    if (fabsf(erro) <= passo)
+        return alvo;
+
+    return atual + ((erro > 0) ? passo : -passo);
+}
+
+// Dá UM passo do inimigo em direção ao centro da célula (alvoX, alvoY),
+// seguindo o menor caminho livre (BFS a partir do destino).
+static MoveResult enemyMoveToCell(
+    Enemy *enemy,
+    int alvoX,
+    int alvoY,
+    float velocidade,
     int mapa[MAP_H][MAP_W]
 )
 {
-    if (enemy == NULL || *enemy == NULL || playerPos == NULL)
-        return;
+    float raioInimigo = TILE / 4.0f;
+    Vector2 *pos = &enemy->pos;
 
-    // Posição REAL do centro do inimigo no mapa.
-    // Não subtraia frameWidth / 2.
-    int ex = (int)floorf((*enemy)->pos.x / TILE);
-    int ey = (int)floorf((*enemy)->pos.y / TILE);
+    int ex = (int)floorf(pos->x / TILE);
+    int ey = (int)floorf(pos->y / TILE);
 
-    int px = (int)floorf(playerPos->x / TILE);
-    int py = (int)floorf(playerPos->y / TILE);
+    if (ex < 0 || ex >= MAP_W || ey < 0 || ey >= MAP_H ||
+        alvoX < 0 || alvoX >= MAP_W || alvoY < 0 || alvoY >= MAP_H)
+        return MOVE_BLOCKED;
 
-    // Verifica os limites do mapa
-    if (ex < 0 || ex >= MAP_W ||
-        ey < 0 || ey >= MAP_H ||
-        px < 0 || px >= MAP_W ||
-        py < 0 || py >= MAP_H)
-        return;
+    // Origem e destino devem ser células livres
+    if (mapa[ey][ex] != 0 || mapa[alvoY][alvoX] != 0)
+        return MOVE_BLOCKED;
 
-    // O inimigo e o jogador devem estar em células livres
-    if (mapa[ey][ex] != 0 || mapa[py][px] != 0)
-        return;
+    Vector2 centroAtual = {
+        (ex + 0.5f) * TILE,
+        (ey + 0.5f) * TILE
+    };
 
-    // Distância mínima em número de células
+    // Já está na célula de destino: só falta chegar ao centro dela
+    if (ex == alvoX && ey == alvoY)
+    {
+        Vector2 tentativa = *pos;
+        tentativa.x = stepToward(pos->x, centroAtual.x, velocidade);
+        tentativa.y = stepToward(pos->y, centroAtual.y, velocidade);
+
+        if (!checkCollisionCircleMap(tentativa, raioInimigo, mapa))
+            *pos = tentativa;
+
+        if (pos->x == centroAtual.x && pos->y == centroAtual.y)
+            return MOVE_ARRIVED;
+
+        return MOVE_EN_ROUTE;
+    }
+
+    // Distância mínima (em células) de cada célula até o DESTINO
     int dist[MAP_H][MAP_W];
 
-    // Fila da busca BFS
     int filaX[MAP_W * MAP_H];
     int filaY[MAP_W * MAP_H];
 
     for (int y = 0; y < MAP_H; y++)
-    {
         for (int x = 0; x < MAP_W; x++)
-        {
             dist[y][x] = -1;
-        }
-    }
 
     int inicio = 0;
     int fim = 0;
 
-    // Começa a busca na posição do jogador
-    filaX[fim] = px;
-    filaY[fim] = py;
+    filaX[fim] = alvoX;
+    filaY[fim] = alvoY;
     fim++;
 
-    dist[py][px] = 0;
+    dist[alvoY][alvoX] = 0;
 
     // Movimentos: direita, esquerda, baixo e cima
     int dirX[4] = { 1, -1, 0, 0 };
     int dirY[4] = { 0, 0, 1, -1 };
 
-    // BFS: encontra as distâncias pelo caminho livre
     while (inicio < fim)
     {
         int x = filaX[inicio];
@@ -99,14 +134,10 @@ void enemyWalk(
             int nx = x + dirX[i];
             int ny = y + dirY[i];
 
-            if (nx < 0 || nx >= MAP_W ||
-                ny < 0 || ny >= MAP_H)
+            if (nx < 0 || nx >= MAP_W || ny < 0 || ny >= MAP_H)
                 continue;
 
-            if (mapa[ny][nx] != 0)
-                continue;
-
-            if (dist[ny][nx] != -1)
+            if (mapa[ny][nx] != 0 || dist[ny][nx] != -1)
                 continue;
 
             dist[ny][nx] = dist[y][x] + 1;
@@ -117,11 +148,13 @@ void enemyWalk(
         }
     }
 
-    // Se não existe caminho até o jogador, não se move
+    // Sem caminho até o destino
     if (dist[ey][ex] <= 0)
-        return;
+        return MOVE_BLOCKED;
 
-    // Encontra o próximo bloco do menor caminho
+    // Próxima céluVocê está sem mensagens gratuitas até 18:30
+//Fazer upgrade
+//la do menor caminho
     int proximoX = ex;
     int proximoY = ey;
 
@@ -130,8 +163,7 @@ void enemyWalk(
         int nx = ex + dirX[i];
         int ny = ey + dirY[i];
 
-        if (nx < 0 || nx >= MAP_W ||
-            ny < 0 || ny >= MAP_H)
+        if (nx < 0 || nx >= MAP_W || ny < 0 || ny >= MAP_H)
             continue;
 
         if (dist[ny][nx] == dist[ey][ex] - 1)
@@ -142,126 +174,91 @@ void enemyWalk(
         }
     }
 
-    // Se não encontrou um próximo bloco, para
     if (proximoX == ex && proximoY == ey)
+        return MOVE_BLOCKED;
+
+    Vector2 centroProximo = {
+        (proximoX + 0.5f) * TILE,
+        (proximoY + 0.5f) * TILE
+    };
+
+    Vector2 tentativa = *pos;
+
+    if (proximoX != ex)
+    {
+        // Caminho horizontal: primeiro alinha ao centro vertical do corredor
+        if (pos->y != centroAtual.y)
+            tentativa.y = stepToward(pos->y, centroAtual.y, velocidade);
+        else
+            tentativa.x = stepToward(pos->x, centroProximo.x, velocidade);
+    }
+    else
+    {
+        // Caminho vertical: primeiro alinha ao centro horizontal do corredor
+        if (pos->x != centroAtual.x)
+            tentativa.x = stepToward(pos->x, centroAtual.x, velocidade);
+        else
+            tentativa.y = stepToward(pos->y, centroProximo.y, velocidade);
+    }
+
+    if (!checkCollisionCircleMap(tentativa, raioInimigo, mapa))
+        *pos = tentativa;
+
+    return MOVE_EN_ROUTE;
+}
+
+// Patrulha: vai de waypoint em waypoint (em ciclo), pausando em cada um.
+static void enemyPatrol(Enemy *enemy, int mapa[MAP_H][MAP_W])
+{
+    if (enemy->waypointCount <= 0)
         return;
 
-    float velocidade = 1.8f;
-    float raioInimigo = TILE / 4.0f;
-
-
-Vector2 centroAtual = {
-    (ex + 0.5f) * TILE,
-    (ey + 0.5f) * TILE
-};
-
-Vector2 centroProximo = {
-    (proximoX + 0.5f) * TILE,
-    (proximoY + 0.5f) * TILE
-};
-
-Vector2 *pos = &(*enemy)->pos;
-
-// Caminho horizontal
-if (proximoX != ex)
-{
-    // Primeiro, alinhar o inimigo ao centro vertical do corredor
-    float erroY = centroAtual.y - pos->y;
-
-    if (fabsf(erroY) > 0.5f)
+    // Parado em um waypoint
+    if (enemy->waitFrames > 0)
     {
-        float passoY;
-
-        if (fabsf(erroY) < velocidade)
-            passoY = erroY;
-        else
-            passoY = (erroY > 0) ? velocidade : -velocidade;
-
-        Vector2 tentativa = *pos;
-        tentativa.y += passoY;
-
-        if (!checkCollisionCircleMap(
-                tentativa, raioInimigo, mapa))
-        {
-            pos->y = tentativa.y;
-        }
-
+        enemy->waitFrames--;
         return;
     }
 
-    // Corrige pequenos erros de alinhamento
-    pos->y = centroAtual.y;
+    Cell alvo = enemy->waypoints[enemy->waypointAtual];
 
-    // Continua avançando até o centro do próximo bloco
-    float erroX = centroProximo.x - pos->x;
+    MoveResult r = enemyMoveToCell(enemy, alvo.x, alvo.y, PATROL_SPEED, mapa);
 
-    float passoX;
-
-    if (fabsf(erroX) < velocidade)
-        passoX = erroX;
-    else
-        passoX = (erroX > 0) ? velocidade : -velocidade;
-
-    Vector2 tentativa = *pos;
-    tentativa.x += passoX;
-
-    if (!checkCollisionCircleMap(
-            tentativa, raioInimigo, mapa))
+    // Chegou (ou o waypoint é inalcançável): passa para o próximo
+    if (r != MOVE_EN_ROUTE)
     {
-        pos->x = tentativa.x;
+        enemy->waypointAtual = (enemy->waypointAtual + 1) % enemy->waypointCount;
+        enemy->waitFrames = (r == MOVE_ARRIVED) ? PATROL_WAIT_FRAMES : 0;
     }
 }
 
-// Caminho vertical
-else if (proximoY != ey)
+// Perseguição: o comportamento que o antigo enemyWalk tinha.
+static void enemyChase(Enemy *enemy, Vector2 playerPos, int mapa[MAP_H][MAP_W])
 {
-    // Primeiro, alinhar o inimigo ao centro horizontal do corredor
-    float erroX = centroAtual.x - pos->x;
+    int ex = (int)floorf(enemy->pos.x / TILE);
+    int ey = (int)floorf(enemy->pos.y / TILE);
 
-    if (fabsf(erroX) > 0.5f)
-    {
-        float passoX;
+    int px = (int)floorf(playerPos.x / TILE);
+    int py = (int)floorf(playerPos.y / TILE);
 
-        if (fabsf(erroX) < velocidade)
-            passoX = erroX;
-        else
-            passoX = (erroX > 0) ? velocidade : -velocidade;
-
-        Vector2 tentativa = *pos;
-        tentativa.x += passoX;
-
-        if (!checkCollisionCircleMap(
-                tentativa, raioInimigo, mapa))
-        {
-            pos->x = tentativa.x;
-        }
-
+    // Já está na célula do jogador
+    if (ex == px && ey == py)
         return;
-    }
 
-    // Corrige pequenos erros de alinhamento
-    pos->x = centroAtual.x;
-
-    // Continua avançando até o centro do próximo bloco
-    float erroY = centroProximo.y - pos->y;
-
-    float passoY;
-
-    if (fabsf(erroY) < velocidade)
-        passoY = erroY;
-    else
-        passoY = (erroY > 0) ? velocidade : -velocidade;
-
-    Vector2 tentativa = *pos;
-    tentativa.y += passoY;
-
-    if (!checkCollisionCircleMap(
-            tentativa, raioInimigo, mapa))
-    {
-        pos->y = tentativa.y;
-    }
+    enemyMoveToCell(enemy, px, py, CHASE_SPEED, mapa);
 }
 
+// Chame uma vez por frame.
+void enemyUpdate(Enemy *enemy, Vector2 playerPos, int mapa[MAP_H][MAP_W])
+{
+    if (enemy == NULL || !enemy->alive)
+        return;
+
+    switch (enemy->state)
+    {
+        case ENEMY_PATROL: enemyPatrol(enemy, mapa);             break;
+        case ENEMY_CHASE:  enemyChase(enemy, playerPos, mapa);   break;
+    }
 }
 
 void drawEnemy(Vector2 playerPos,float angle,Enemy enemy,Texture2D enemyTex,float zBuffer[])
@@ -480,6 +477,7 @@ void castRay(Vector2 playerPos,float angle,int mapa[MAP_H][MAP_W],Texture2D wall
         DrawTexturePro(wallTex, source, dest, (Vector2){0,0}, 0, tint);
         zBuffer[i] = perpWallDist;
     }
+// O BFS agora parte de qualquer célula de destino, e não só do jogador. Por isso os waypoints não precisam estar em linha reta, porque o inimigo contorna as paredes sozinho.
 }
 void drawFloorAndCeiling(Vector2 playerPos,float angle,Color*floorPixels,Color*ceilPixels,Texture2D floorTex,Texture2D ceilTex,Image screenBuffer,Texture2D screenTex)
 {
@@ -595,7 +593,7 @@ bool checkCollisionCircleMap(
 void playerMovement(Vector2*playerPos,float*angle,float radius,int mapa[MAP_H][MAP_W],float*sprint,float*sprint_stamina) {
     float speed=1.5f;
 
-    if(IsKeyDown(KEY_LEFT_SHIFT)&&*sprint>0 &&*sprint_stamina>0) {
+    if(IsKeyDown(KEY_LEFT_SHIFT)&&*sprint>0 &&*sprint_stamina>0&&(IsKeyDown(KEY_W) != IsKeyDown(KEY_S))) {
         speed = 3.0f;
         *sprint -= 0.21875f;
         *sprint_stamina =* sprint_stamina - 0.21875f;
@@ -609,7 +607,7 @@ void playerMovement(Vector2*playerPos,float*angle,float radius,int mapa[MAP_H][M
     }
 
     Vector2 newPos=*playerPos;
-
+    
     if(IsKeyDown(KEY_W))
     {
         newPos.x += cosf(*angle) * speed;

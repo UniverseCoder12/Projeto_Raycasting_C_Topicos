@@ -18,7 +18,17 @@ Node* buscar(Node *cabecalho, int id);
 bool remover(Node *cabecalho, int id);
 Node *pegar_elemento_lista(Node *cabecalho, int pos);
 void destruir_lista(Node *cabecalho);
-typedef struct Enemy{Vector2 pos;bool alive;int frame;int frameCount;int frameWidth;int frameHeight;} Enemy;
+#define MAX_WAYPOINTS 16
+typedef enum EnemyState {ENEMY_PATROL, ENEMY_CHASE} EnemyState;
+typedef struct Cell {int x;int y;} Cell;   // coordenadas em células do mapa (não em pixels)
+typedef struct Enemy{
+    Vector2 pos;bool alive;int frame;int frameCount;int frameWidth;int frameHeight;
+    EnemyState state;
+    Cell waypoints[MAX_WAYPOINTS];
+    int waypointCount;
+    int waypointAtual;   // índice do waypoint para onde está indo
+    int waitFrames;      // frames restantes de pausa no waypoint
+} Enemy;
 void loadMap(int mapa[MAP_H][MAP_W]);
 void drawEnemy(Vector2 playerPos,float angle,Enemy enemy,Texture2D enemyTex,float zBuffer[]);
 void castRay(Vector2 playerPos,float angle,int mapa[MAP_H][MAP_W],Texture2D wallTex, float zBuffer[]);
@@ -26,4 +36,4 @@ void drawFloorAndCeiling(Vector2 playerPos,float angle,Color*floorPixels,Color*c
 bool checkCollisionCircleMap(Vector2 pos,float radius,int mapa[MAP_H][MAP_W]);
 void playerMovement(Vector2*playerPos,float*angle,float radius,int mapa[MAP_H][MAP_W],float*sprint,float*sprint_stamina);
 bool consumir_item(Node *cabecalho, int pos);
-void enemyWalk(Enemy **enemy, Vector2 *playerPos, int mapa[MAP_H][MAP_W]);
+void enemyUpdate(Enemy *enemy, Vector2 playerPos, int mapa[MAP_H][MAP_W]);
